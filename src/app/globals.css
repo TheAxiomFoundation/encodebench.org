@@ -1,0 +1,181 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════
+   Axiom Foundation design tokens — vendored from
+   axiom-foundation.org packages/ui/src/styles/tokens.css.
+   Sync manually when the family tokens change.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* Color palette — statute paper & legal ink */
+  --color-paper: #faf9f6;
+  --color-paper-elevated: #ffffff;
+  --color-ink: #1c1917;
+  --color-ink-secondary: #57534e;
+  --color-ink-muted: #78716c;
+
+  --color-rule: #e7e5e4;
+  --color-rule-subtle: #f5f5f4;
+  --color-rule-strong: #78716c;
+
+  --color-accent: #92400e;
+  --color-accent-hover: #7c2d12;
+  --color-accent-light: rgba(146, 64, 14, 0.06);
+
+  --color-focus-ring: #92400e;
+
+  --color-code-bg: #1c1917;
+  --color-code-text: #e7e5e4;
+  --color-code-comment: #a8a29e;
+  --color-code-keyword: #fbbf24;
+  --color-code-string: #fdba74;
+  --color-code-number: #7dd3fc;
+  --color-code-function: #86efac;
+  --color-code-variable: #bfdbfe;
+  --color-code-operator: #d6d3d1;
+
+  --color-success: #166534;
+  --color-warning: #92400e;
+  --color-error: #991b1b;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root {
+  --f-display: var(--font-geist-sans), -apple-system, sans-serif;
+  --f-body: var(--font-geist-sans), -apple-system, sans-serif;
+  --f-mono: var(--font-mono), "Fira Code", monospace;
+  --f-serif: var(--font-serif), "Georgia", "Times New Roman", serif;
+}
+
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--f-body);
+  font-feature-settings: "kern", "liga", "calt", "ss01";
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Paper grain — fixed, behind content (family texture). */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.85;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.11  0 0 0 0 0.10  0 0 0 0 0.09  0 0 0 0.085 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* Subtle vignette — editorial framing (family texture). */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 55%,
+    rgba(28, 25, 23, 0.05) 100%
+  );
+}
+
+main {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── EncodeBench page styles ── */
+
+.link-quiet {
+  color: var(--color-ink-secondary);
+  text-decoration: none;
+  transition: color 200ms var(--ease-out);
+}
+.link-quiet:hover {
+  color: var(--color-accent);
+}
+
+.link-accent {
+  color: var(--color-accent);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(146, 64, 14, 0.3);
+  transition:
+    color 200ms var(--ease-out),
+    border-color 200ms var(--ease-out);
+}
+.link-accent:hover {
+  color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Dark editorial section — the gate battery reads as code on ink. */
+.section-dark {
+  background:
+    radial-gradient(circle at 80% 0%, rgba(251, 191, 36, 0.06), transparent 50%),
+    var(--color-code-bg);
+  --color-paper: #1c1917;
+  --color-paper-elevated: #2a2622;
+  --color-ink: #fafaf9;
+  --color-ink-secondary: #d6d3d1;
+  --color-ink-muted: #a8a29e;
+  --color-rule: #44403c;
+  --color-rule-subtle: #292524;
+  --color-accent: #d97706;
+  --color-accent-hover: #b45309;
+  --color-accent-light: rgba(217, 119, 6, 0.12);
+  color: var(--color-ink);
+}
+
+/* Data tables — hairline rules, statute-paper register. */
+.bench-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.bench-table th {
+  text-align: left;
+  font-weight: 500;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--color-rule-strong);
+}
+.bench-table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--color-rule);
+  vertical-align: top;
+}
+.bench-table tr:last-child td {
+  border-bottom: none;
+}
+
+.mono {
+  font-family: var(--f-mono);
+}
+
+/* Pending board cells — the honest empty state. */
+.cell-pending {
+  color: var(--color-ink-muted);
+  font-family: var(--f-mono);
+  letter-spacing: 0.1em;
+}
