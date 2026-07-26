@@ -168,14 +168,14 @@ function Board() {
           <strong className="font-semibold">
             This run is not reasoning-effort matched.
           </strong>{" "}
-          The harness pins the OpenAI runners to{" "}
-          <span className="mono text-[0.8rem]">reasoning_effort=&quot;low&quot;</span>{" "}
-          and passes no effort setting to the Anthropic runners, which take
-          their CLI default. So the OpenAI scores are low-effort scores rather
-          than each model&rsquo;s best, and cross-family rows are not directly
-          comparable — including the latency column. Making effort explicit,
-          uniform, and recorded in execution identity is the next fix; the run
-          after that will be matched.
+          The harness never set it. Its OpenAI path passes{" "}
+          <span className="mono text-[0.8rem]">-c reasoning_effort</span>, which
+          is not a recognized Codex config field — Codex accepts the flag and
+          silently ignores it — and its Anthropic path passes no effort flag at
+          all. Every runner therefore used its own CLI default, unset and
+          unrecorded. Making effort explicit, recorded in execution identity,
+          and swept as an axis is the next fix; until then, read these as
+          default-effort scores and not as each model&rsquo;s best.
         </p>
       </div>
     </section>
