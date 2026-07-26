@@ -164,6 +164,19 @@ function Board() {
           those cases are held out of the compile and grounding denominators
           rather than counted as errors.
         </p>
+        <p className="mt-3 rounded border border-[var(--color-rule-strong)] bg-[var(--color-paper)] p-4 text-sm text-[var(--color-ink-secondary)]">
+          <strong className="font-semibold">
+            This run is not reasoning-effort matched.
+          </strong>{" "}
+          The harness pins the OpenAI runners to{" "}
+          <span className="mono text-[0.8rem]">reasoning_effort=&quot;low&quot;</span>{" "}
+          and passes no effort setting to the Anthropic runners, which take
+          their CLI default. So the OpenAI scores are low-effort scores rather
+          than each model&rsquo;s best, and cross-family rows are not directly
+          comparable — including the latency column. Making effort explicit,
+          uniform, and recorded in execution identity is the next fix; the run
+          after that will be matched.
+        </p>
       </div>
     </section>
   );
