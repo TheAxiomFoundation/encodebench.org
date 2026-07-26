@@ -42,3 +42,4 @@ coverage/
 *.tgz
 .env.production.real
 .claude/
+.env*

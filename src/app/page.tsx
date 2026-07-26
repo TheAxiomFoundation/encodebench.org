@@ -1,6 +1,8 @@
 import Image from "next/image";
 import {
-  BOARD_COLUMNS,
+  BOARD,
+  BOARD_ENCODER,
+  BOARD_RUN,
   CORPUS_RELEASE,
   ROSTER,
   STRATA,
@@ -25,11 +27,11 @@ export default function Page() {
 
 function Nav() {
   return (
-    <nav className="mx-auto flex max-w-5xl items-baseline justify-between px-6 pt-8">
+    <nav className="mx-auto flex max-w-5xl flex-wrap items-baseline justify-between gap-y-3 px-6 pt-8">
       <a href="#" className="text-lg font-semibold tracking-tight">
         Encode<span className="text-[var(--color-accent)]">Bench</span>
       </a>
-      <div className="flex gap-6 text-sm">
+      <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm sm:gap-x-6">
         <a className="link-quiet" href="#board">
           board
         </a>
@@ -101,13 +103,14 @@ function Board() {
             The board — UK v1
           </h2>
           <span className="rounded-full border border-[var(--color-rule-strong)] px-3 py-1 text-xs font-medium uppercase tracking-wide text-[var(--color-ink-secondary)]">
-            First run pending
+            Run {BOARD_RUN} · {BOARD_ENCODER}
           </span>
         </div>
         <p className="mt-3 max-w-2xl text-[0.95rem] text-[var(--color-ink-secondary)]">
-          The suite is frozen: 16 cases, five models queued, every run bound to
-          the signed corpus release{" "}
-          <span className="mono text-[0.85rem]">{CORPUS_RELEASE}</span>.
+          16 cases, six models, every run bound to the signed corpus release{" "}
+          <span className="mono text-[0.85rem]">{CORPUS_RELEASE}</span>. Headline
+          is the deterministic gate: the encode succeeds, the RuleSpec compiles,
+          its companion tests pass, and no numeric literal is ungrounded.
         </p>
         <div className="mt-6 overflow-x-auto">
           <table className="bench-table min-w-[640px]">
@@ -115,38 +118,51 @@ function Board() {
               <tr>
                 <th>runner</th>
                 <th>model</th>
-                {BOARD_COLUMNS.map((column) => (
-                  <th
-                    key={column.key}
-                    className={
-                      column.headline ? "text-[var(--color-accent)]" : undefined
-                    }
-                  >
-                    {column.label}
-                  </th>
-                ))}
+                <th className="text-[var(--color-accent)]">gate pass</th>
+                <th>T</th>
+                <th>artifacts</th>
+                <th>compile</th>
+                <th>ci</th>
+                <th>grounded</th>
+                <th>median</th>
               </tr>
             </thead>
             <tbody>
-              {ROSTER.map((runner) => (
-                <tr key={runner.name}>
-                  <td className="font-medium">{runner.name}</td>
-                  <td className="mono text-[0.8rem] text-[var(--color-ink-secondary)]">
-                    {runner.model}
-                  </td>
-                  {BOARD_COLUMNS.map((column) => (
-                    <td key={column.key} className="cell-pending">
-                      ·
+              {BOARD.map((row) => {
+                const runner = ROSTER.find((r) => r.name === row.runner);
+                return (
+                  <tr key={row.runner}>
+                    <td className="font-medium">{row.runner}</td>
+                    <td className="mono text-[0.8rem] text-[var(--color-ink-secondary)]">
+                      {runner?.model ?? row.runner}
                     </td>
-                  ))}
-                </tr>
-              ))}
+                    <td className="font-semibold text-[var(--color-accent)]">
+                      {row.gate}{" "}
+                      <span className="mono text-[0.75rem] font-normal opacity-70">
+                        {row.gatePct.toFixed(1)}%
+                      </span>
+                    </td>
+                    <td className="mono text-[0.8rem]">
+                      {row.timeouts === 0 ? "—" : row.timeouts}
+                    </td>
+                    <td className="mono text-[0.8rem]">{row.artifacts}/16</td>
+                    <td className="mono text-[0.8rem]">{row.compile}</td>
+                    <td className="mono text-[0.8rem]">{row.ci}</td>
+                    <td className="mono text-[0.8rem]">{row.grounded}</td>
+                    <td className="mono text-[0.8rem]">{row.median}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
         <p className="mt-5 text-sm text-[var(--color-ink-muted)]">
-          No numbers until the run lands — this page never shows a score a gate
-          didn&rsquo;t produce.
+          Every number here came out of a signed{" "}
+          <span className="mono text-[0.8rem]">results.json</span> through the
+          fold — none is hand-entered. A <span className="mono">T</span> is a
+          case that hit the harness time ceiling, not a model that failed:
+          those cases are held out of the compile and grounding denominators
+          rather than counted as errors.
         </p>
       </div>
     </section>

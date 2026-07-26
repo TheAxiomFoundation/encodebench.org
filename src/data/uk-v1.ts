@@ -201,11 +201,47 @@ export interface Runner {
 }
 
 export const ROSTER: Runner[] = [
-  { name: "terra", model: "gpt-5.6-terra", family: "OpenAI" },
-  { name: "sol", model: "gpt-5.6-sol", family: "OpenAI" },
   { name: "gpt-5.5", model: "gpt-5.5", family: "OpenAI" },
-  { name: "luna", model: "gpt-5.6-luna", family: "OpenAI" },
+  { name: "sol", model: "gpt-5.6-sol", family: "OpenAI" },
   { name: "fable", model: "claude-fable-5", family: "Anthropic" },
+  { name: "terra", model: "gpt-5.6-terra", family: "OpenAI" },
+  { name: "luna", model: "gpt-5.6-luna", family: "OpenAI" },
+  { name: "opus-5", model: "claude-opus-5", family: "Anthropic" },
+];
+
+// Board v3 — the first run whose every runner finalized without operator
+// salvage. Encoder axiom-encode 0.2.1382 (c69a51a4), uniform 1800s
+// per-invocation encoder timeout and 3600s case budget, both recorded in
+// execution identity. Numbers come from `axiom-encode eval-board` over six
+// signed results.json files; nothing here is hand-entered from a summary.
+//
+// Scores are toolchain-bound. An earlier run on 0.2.1380 produced different
+// numbers (gpt-5.5 11/16, sol 15/16, fable 9/16, terra 11/16, luna 5/16,
+// opus-5 2/16) and the fold refuses to combine the two, because the encoder
+// differs. Read one board as one sample, not a settled ranking.
+
+export const BOARD_ENCODER = "axiom-encode 0.2.1382";
+export const BOARD_RUN = "v3";
+
+export interface BoardRow {
+  runner: string;
+  gate: string;
+  gatePct: number;
+  timeouts: number;
+  artifacts: number;
+  compile: string;
+  ci: string;
+  grounded: string;
+  median: string;
+}
+
+export const BOARD: BoardRow[] = [
+  { runner: "gpt-5.5", gate: "15/16", gatePct: 93.8, timeouts: 0, artifacts: 16, compile: "100%", ci: "93.8%", grounded: "100%", median: "48s" },
+  { runner: "sol", gate: "14/16", gatePct: 87.5, timeouts: 0, artifacts: 16, compile: "100%", ci: "87.5%", grounded: "100%", median: "45s" },
+  { runner: "fable", gate: "12/16", gatePct: 75.0, timeouts: 1, artifacts: 15, compile: "100%", ci: "80.0%", grounded: "100%", median: "266s" },
+  { runner: "terra", gate: "11/16", gatePct: 68.8, timeouts: 0, artifacts: 16, compile: "100%", ci: "68.8%", grounded: "100%", median: "34s" },
+  { runner: "luna", gate: "8/16", gatePct: 50.0, timeouts: 0, artifacts: 15, compile: "93.3%", ci: "53.3%", grounded: "100%", median: "50s" },
+  { runner: "opus-5", gate: "6/16", gatePct: 37.5, timeouts: 0, artifacts: 16, compile: "87.5%", ci: "37.5%", grounded: "100%", median: "47s" },
 ];
 
 export const BOARD_COLUMNS = [
