@@ -173,9 +173,11 @@ function Board() {
           is not a recognized Codex config field — Codex accepts the flag and
           silently ignores it — and its Anthropic path passes no effort flag at
           all. Every runner therefore used its own CLI default, unset and
-          unrecorded. Making effort explicit, recorded in execution identity,
-          and swept as an axis is the next fix; until then, read these as
-          default-effort scores and not as each model&rsquo;s best.
+          unrecorded. A follow-up audit also found the backends did not sit the
+          same exam: the Codex runners could read workspace files while the
+          Anthropic runners ran prompt-only. Cross-family rows here should be
+          read loosely. The next run fixes both — explicit recorded effort and
+          an identical prompt-only exam for every backend.
         </p>
       </div>
     </section>
