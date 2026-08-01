@@ -24,9 +24,9 @@ bun run dev
 ## Design
 
 Vendored Axiom Foundation design tokens (statute paper, legal ink, warm
-amber) from `axiom-foundation.org/packages/ui` — sync `src/app/globals.css`
+amber) from `axiom.org/packages/ui` — sync `src/app/globals.css`
 manually when the family tokens change. Logo assets are the canonical files
-from the axiom-foundation.org repo.
+from the axiom.org repo.
 
 ## Deploy
 
