@@ -160,7 +160,7 @@ function Board() {
           </table>
         </div>
         <p className="mt-5 text-sm text-[var(--color-ink-muted)]">
-          Every number here came out of a signed{" "}
+          Every number here came out of the run&rsquo;s recorded{" "}
           <span className="mono text-[0.8rem]">results.json</span> through the
           fold — none is hand-entered. A <span className="mono">T</span> is a
           case that hit the harness time ceiling, not a model that failed:
@@ -184,7 +184,7 @@ function Board() {
           <a className="link-accent" href="/paper">
             paper
           </a>{" "}
-          carries the full account, every number derived from the signed run
+          carries the full account, every number derived from the frozen run
           artifacts.
         </p>
       </div>
@@ -196,7 +196,7 @@ const GATES = [
   {
     name: "encode",
     detail:
-      "The model receives one provision's text, resolved from a signed corpus release, in a cold workspace: the source, stubs for defined terms, and no existing encoding of the target. It writes the RuleSpec module.",
+      "The model receives one provision's text, resolved from a signed corpus release, in a cold workspace: the resolved source text and its metadata, and no existing encoding of the target. It writes the RuleSpec module.",
   },
   {
     name: "compile",

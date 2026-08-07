@@ -62,7 +62,7 @@ export default function PaperPage() {
           timeout that graded slowness as failure, an effort setting that did
           nothing, three backends administering different exams — and the
           pre-registered board that closes them. Every number derives in code
-          from the frozen, signed run artifacts.
+          from the frozen run artifacts, hash-verified at every load.
         </p>
         <div className="mt-8 flex flex-wrap gap-4">
           <a

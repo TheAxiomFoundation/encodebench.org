@@ -23,10 +23,14 @@ import gzip
 import hashlib
 import json
 import os
+import subprocess
+import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SNAPSHOT_DIR_NAME = "20260807"
+sys.path.insert(0, str(REPO_ROOT / "paper"))
+from paper_results import SNAPSHOT_DIR_NAME  # noqa: E402
+
 SNAPSHOT_DIR = REPO_ROOT / "paper" / "snapshot" / SNAPSHOT_DIR_NAME
 
 RIG_DIR = Path(
@@ -44,8 +48,32 @@ BOARDS: dict[str, tuple[str, tuple[str, ...]]] = {
         "runs.v2-f60fd29d",
         ("sol", "gpt-5.5", "terra", "luna", "fable", "opus-5"),
     ),
-    "v3": ("runs", ("sol", "gpt-5.5", "terra", "luna", "fable", "opus-5")),
+    "v3": (
+        "runs.v3-c69a51a4",
+        ("sol", "gpt-5.5", "terra", "luna", "fable", "opus-5"),
+    ),
 }
+
+# Runs the boards refused: frozen so the paper's integrity notes derive from
+# artifacts rather than narrative. Path is relative to the rig; the manifest
+# marks each entry discarded with its reason.
+DISCARDED_RUNS = {
+    "v2-opus5-quota-poisoned": {
+        "path": "runs.v2-opus5-quota-poisoned/results.json",
+        "reason": (
+            "opus-5's first v2 attempt: its encoder and its reviewer drew on "
+            "one subscription account, which hit its session limit mid-run. "
+            "Discarded as a measurement failure and re-run on split "
+            "accounts; the clean re-run is boards/v2/opus-5."
+        ),
+    },
+}
+
+# The suite manifest exactly as the v3 encoder commit pinned it, frozen from
+# git so the paper's suite table can be audited against the same text the
+# boards ran.
+SUITE_YAML_COMMIT = "c69a51a4"
+AXIOM_ENCODE_REPO = Path.home() / "TheAxiomFoundation" / "axiom-encode"
 
 BOARD_RECORD_URLS = {
     "v1": "https://github.com/TheAxiomFoundation/axiom-encode/issues/1189#issuecomment-5056359224",
@@ -131,21 +159,59 @@ def main() -> None:
     probe_raw = probe_source.read_bytes()
     (SNAPSHOT_DIR / EFFORT_PROBE_FILE).write_bytes(probe_raw)
 
+    discarded_manifest: dict[str, dict] = {}
+    for name, spec in DISCARDED_RUNS.items():
+        raw = (RIG_DIR / spec["path"]).read_bytes()
+        stored = deterministic_gzip(raw)
+        dest_rel = f"discarded/{name}.results.json.gz"
+        dest = SNAPSHOT_DIR / dest_rel
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(stored)
+        discarded_manifest[name] = {
+            "file": dest_rel,
+            "sha256_gz": sha256_bytes(stored),
+            "sha256_json": sha256_bytes(raw),
+            "discarded": True,
+            "reason": spec["reason"],
+        }
+
+    suite_yaml = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(AXIOM_ENCODE_REPO),
+            "show",
+            f"{SUITE_YAML_COMMIT}:benchmarks/encodebench_uk_v1.yaml",
+        ],
+        check=True,
+        capture_output=True,
+    ).stdout
+    suite_rel = "encodebench_uk_v1.yaml"
+    (SNAPSHOT_DIR / suite_rel).write_bytes(suite_yaml)
+
     manifest = {
         "schema": "encodebench-paper-snapshot/v1",
         "snapshot_dir": SNAPSHOT_DIR_NAME,
         "suite": "EncodeBench UK v1",
         "suite_manifest": "benchmarks/encodebench_uk_v1.yaml",
+        "suite_manifest_frozen": {
+            "file": suite_rel,
+            "sha256": sha256_bytes(suite_yaml),
+            "source_commit": SUITE_YAML_COMMIT,
+        },
         "tracking_issue": "https://github.com/TheAxiomFoundation/axiom-encode/issues/1189",
         "boards": boards_manifest,
+        "discarded_runs": discarded_manifest,
         "effort_probe": {
             "file": EFFORT_PROBE_FILE,
             "sha256": sha256_bytes(probe_raw),
             "note": (
                 "Receiver-behavior probe recorded 2026-07-26: codex "
                 "model_reasoning_effort sweep on gpt-5.6-terra and claude "
-                "--effort sweep on claude-opus-5, N per level as recorded "
-                "in the file."
+                "--effort sweep on claude-opus-5. The file header says N=5 "
+                "per level; that holds for the codex arm only — the claude "
+                "rows carry three samples per level, and the paper derives "
+                "N per arm from the rows."
             ),
         },
     }

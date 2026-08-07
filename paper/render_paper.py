@@ -88,9 +88,14 @@ def main() -> None:
     env["QUARTO_PYTHON"] = sys.executable
     env["JUPYTER_PREFER_ENV_PATH"] = "1"
 
-    if not (PAPER_DIR / "snapshot" / "20260807" / "manifest.json").exists():
+    sys.path.insert(0, str(PAPER_DIR))
+    from paper_results import SNAPSHOT_DIR_NAME
+
+    if not (
+        PAPER_DIR / "snapshot" / SNAPSHOT_DIR_NAME / "manifest.json"
+    ).exists():
         raise SystemExit(
-            "Missing paper/snapshot/20260807. Run "
+            f"Missing paper/snapshot/{SNAPSHOT_DIR_NAME}. Run "
             "paper/scripts/freeze_snapshot.py first."
         )
 

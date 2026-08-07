@@ -3,23 +3,25 @@
 Every quantitative claim in ``paper/index.qmd`` reads from the module-level
 instance ``r`` exposed here, mirroring the PolicyBench paper pattern. The
 accessors compute from the FROZEN snapshot under ``paper/snapshot/20260807/``
-— sixteen signed ``results.json`` files across three boards, plus the
-effort-probe record — never from live rig output, and never from a summary
-someone typed.
+— the boards' ``results.json`` files, one discarded run frozen as such, the
+suite manifest at the v3 encoder commit, and the effort-probe record —
+never from live rig output, and never from a summary someone typed.
 
 The module is stdlib-only. It re-implements the deterministic pieces of
 ``axiom-encode``'s ``eval-board`` fold (gate battery, cell classification,
 artifact denominators, medians) against the frozen rows, then verifies the
 derived headline numbers against the board records posted to
 axiom-encode#1189 (``verify()``, called by the manuscript's setup cell).
-A mismatch refuses the render instead of publishing drift.
+A mismatch refuses the render instead of publishing drift. Every frozen
+file loads through a sha256 check against the manifest.
 
 Cost model, copied from ``ops/model-capability-eval/rig/cost_report.py``:
 codex-backend runners price recorded tokens at published July 2026 API rates
-(cache reads at 10% of input); Claude-backend runners use the CLI's own
-recorded per-call ``actual_cost_usd``, because claude-opus-5 has no published
-per-token rate in the reference the rig bundles and inventing one would be
-fabrication. All runs were subscription-billed; these are API-equivalents.
+(cache reads at 10% of the input rate); Claude-backend runners use the CLI's
+own recorded per-call ``actual_cost_usd``, because claude-opus-5 has no
+published per-token rate in the reference the harness bundles and inventing
+one would be fabrication. All runs were subscription-billed; these are
+API-equivalents, and the two bases are labeled wherever they meet.
 """
 
 from __future__ import annotations
@@ -34,7 +36,8 @@ from pathlib import Path
 from statistics import median
 
 PAPER_DIR = Path(__file__).resolve().parent
-SNAPSHOT_DIR = PAPER_DIR / "snapshot" / "20260807"
+SNAPSHOT_DIR_NAME = "20260807"
+SNAPSHOT_DIR = PAPER_DIR / "snapshot" / SNAPSHOT_DIR_NAME
 
 # (input, output) USD per 1M tokens, July 2026 published API rates; cache
 # reads billed at 10% of the input rate. Same table the rig's cost_report.py
@@ -50,9 +53,10 @@ CLI_REPORTED_MODELS = {"claude-fable-5", "claude-opus-5"}
 BOARD_ORDER = ("v1", "v2", "v3")
 
 # Expected headline numbers, pinned from the board records posted to
-# axiom-encode#1189 (URLs in the snapshot manifest). These are verification
-# targets, not sources: the paper renders only derived values, and
-# ``verify()`` refuses the render if derivation and record disagree.
+# axiom-encode#1189 (URLs in the snapshot manifest), plus probe medians from
+# the frozen probe record. These are verification targets, not sources: the
+# paper renders only derived values, and ``verify()`` refuses the render if
+# derivation and record disagree.
 PUBLISHED = {
     "v1": {
         "gate": {"sol": 14, "gpt-5.5": 14, "terra": 9, "luna": 5},
@@ -115,6 +119,11 @@ PUBLISHED = {
         "total_cost": 52.09,
     },
 }
+PUBLISHED_PROBE = {
+    ("codex", "low"): 145.0,
+    ("codex", "xhigh"): 2756.0,
+    ("claude", "answers"): {"28"},
+}
 
 
 def _sha256(data: bytes) -> str:
@@ -175,6 +184,7 @@ def cell_state(result: dict) -> str:
 class RunnerStats:
     runner: str
     model: str
+    backend: str
     cases: int
     gate_passes: int
     timeouts: int
@@ -184,6 +194,7 @@ class RunnerStats:
     zero_ungrounded: int
     review_scores: list[float] = field(default_factory=list)
     durations_ms: list[int] = field(default_factory=list)
+    completed_durations_ms: list[int] = field(default_factory=list)
     input_tokens: int = 0
     output_tokens: int = 0
     cache_read_tokens: int = 0
@@ -202,6 +213,15 @@ class RunnerStats:
         return int(round(median(self.durations_ms) / 1000.0))
 
     @property
+    def completed_median_seconds(self) -> int:
+        """Median over rows that produced metrics (excludes killed rows)."""
+        return int(round(median(self.completed_durations_ms) / 1000.0))
+
+    @property
+    def max_seconds(self) -> int:
+        return int(round(max(self.durations_ms) / 1000.0))
+
+    @property
     def compile_rate(self) -> str:
         return _fmt_pct(self.compile_passes, self.artifacts)
 
@@ -212,6 +232,10 @@ class RunnerStats:
     @property
     def grounded_rate(self) -> str:
         return _fmt_pct(self.zero_ungrounded, self.artifacts)
+
+    @property
+    def review_score_count(self) -> int:
+        return len(self.review_scores)
 
     @property
     def mean_review_score(self) -> float | None:
@@ -241,12 +265,58 @@ class RunnerStats:
         return self.cost / self.gate_passes
 
 
+def _stats_for(runner: str, rows: list[dict]) -> RunnerStats:
+    s = RunnerStats(
+        runner=runner,
+        model=rows[0]["model"],
+        backend=rows[0]["backend"],
+        cases=len(rows),
+        gate_passes=sum(1 for r in rows if gate_pass(r)),
+        timeouts=sum(1 for r in rows if cell_state(r) == "T"),
+        artifacts=0,
+        compile_passes=0,
+        ci_passes=0,
+        zero_ungrounded=0,
+    )
+    for r in rows:
+        duration = r.get("duration_ms")
+        has_duration = isinstance(duration, int) and not isinstance(duration, bool)
+        if has_duration:
+            s.durations_ms.append(duration)
+        s.input_tokens += r.get("input_tokens") or 0
+        s.output_tokens += r.get("output_tokens") or 0
+        s.cache_read_tokens += r.get("cache_read_tokens") or 0
+        s.cli_reported_cost += r.get("actual_cost_usd") or 0.0
+        metrics = r.get("metrics")
+        if metrics is None:
+            continue
+        s.artifacts += 1
+        if has_duration:
+            s.completed_durations_ms.append(duration)
+        if metrics.get("compile_pass") is True:
+            s.compile_passes += 1
+        if metrics.get("ci_pass") is True:
+            s.ci_passes += 1
+        if metrics.get("ungrounded_numeric_count") == 0:
+            s.zero_ungrounded += 1
+        score = metrics.get("generalist_review_score")
+        if isinstance(score, (int, float)):
+            s.review_scores.append(float(score))
+    return s
+
+
 class PaperResults:
     """Derived, formatted values for the manuscript."""
 
     @cached_property
     def manifest(self) -> dict:
         return json.loads((SNAPSHOT_DIR / "manifest.json").read_text())
+
+    def _load_verified(self, rel_path: str, expected_sha: str) -> bytes:
+        raw = (SNAPSHOT_DIR / rel_path).read_bytes()
+        if _sha256(raw) != expected_sha:
+            raise ValueError(f"Hash mismatch (stored): {rel_path}")
+        return raw
 
     @cached_property
     def boards(self) -> dict[str, dict[str, dict]]:
@@ -255,14 +325,24 @@ class PaperResults:
         for board, meta in self.manifest["boards"].items():
             runners: dict[str, dict] = {}
             for entry in meta["runners"]:
-                stored = (SNAPSHOT_DIR / entry["file"]).read_bytes()
-                if _sha256(stored) != entry["sha256_gz"]:
-                    raise ValueError(f"Hash mismatch (stored): {entry['file']}")
+                stored = self._load_verified(entry["file"], entry["sha256_gz"])
                 raw = gzip.decompress(stored)
                 if _sha256(raw) != entry["sha256_json"]:
                     raise ValueError(f"Hash mismatch (content): {entry['file']}")
                 runners[entry["runner"]] = json.loads(raw)
             out[board] = runners
+        return out
+
+    @cached_property
+    def discarded(self) -> dict[str, dict]:
+        """Discarded runs, hash-verified; frozen so integrity notes derive."""
+        out: dict[str, dict] = {}
+        for name, entry in self.manifest.get("discarded_runs", {}).items():
+            stored = self._load_verified(entry["file"], entry["sha256_gz"])
+            raw = gzip.decompress(stored)
+            if _sha256(raw) != entry["sha256_json"]:
+                raise ValueError(f"Hash mismatch (content): {entry['file']}")
+            out[name] = json.loads(raw)
         return out
 
     def board_meta(self, board: str) -> dict:
@@ -274,46 +354,13 @@ class PaperResults:
 
     @cached_property
     def stats(self) -> dict[str, dict[str, RunnerStats]]:
-        out: dict[str, dict[str, RunnerStats]] = {}
-        for board, runners in self.boards.items():
-            board_stats: dict[str, RunnerStats] = {}
-            for runner, payload in runners.items():
-                rows = payload["results"]
-                s = RunnerStats(
-                    runner=runner,
-                    model=rows[0]["model"],
-                    cases=len(rows),
-                    gate_passes=sum(1 for r in rows if gate_pass(r)),
-                    timeouts=sum(1 for r in rows if cell_state(r) == "T"),
-                    artifacts=0,
-                    compile_passes=0,
-                    ci_passes=0,
-                    zero_ungrounded=0,
-                )
-                for r in rows:
-                    duration = r.get("duration_ms")
-                    if isinstance(duration, int) and not isinstance(duration, bool):
-                        s.durations_ms.append(duration)
-                    s.input_tokens += r.get("input_tokens") or 0
-                    s.output_tokens += r.get("output_tokens") or 0
-                    s.cache_read_tokens += r.get("cache_read_tokens") or 0
-                    s.cli_reported_cost += r.get("actual_cost_usd") or 0.0
-                    metrics = r.get("metrics")
-                    if metrics is None:
-                        continue
-                    s.artifacts += 1
-                    if metrics.get("compile_pass") is True:
-                        s.compile_passes += 1
-                    if metrics.get("ci_pass") is True:
-                        s.ci_passes += 1
-                    if metrics.get("ungrounded_numeric_count") == 0:
-                        s.zero_ungrounded += 1
-                    score = metrics.get("generalist_review_score")
-                    if isinstance(score, (int, float)):
-                        s.review_scores.append(float(score))
-                board_stats[runner] = s
-            out[board] = board_stats
-        return out
+        return {
+            board: {
+                runner: _stats_for(runner, payload["results"])
+                for runner, payload in runners.items()
+            }
+            for board, runners in self.boards.items()
+        }
 
     def ranked(self, board: str) -> list[RunnerStats]:
         return sorted(
@@ -323,6 +370,16 @@ class PaperResults:
 
     def total_cost(self, board: str) -> float:
         return sum(s.cost for s in self.stats[board].values())
+
+    @cached_property
+    def backends_used(self) -> set[str]:
+        """Every backend that produced a board row, across all boards."""
+        return {
+            r["backend"]
+            for runners in self.boards.values()
+            for payload in runners.values()
+            for r in payload["results"]
+        }
 
     # ------------------------------------------------------------------
     # Grids and cross-board views
@@ -334,6 +391,14 @@ class PaperResults:
             (r["eval_case"]["index"], r["eval_case"]["name"])
             for r in payload["results"]
         ]
+
+    def case_citations(self, board: str = "v3") -> dict[int, str]:
+        """Case index -> corpus citation path, from the frozen rows."""
+        payload = next(iter(self.boards[board].values()))
+        return {
+            r["eval_case"]["index"]: r["eval_case"]["corpus_citation_path"]
+            for r in payload["results"]
+        }
 
     def grid(self, board: str) -> list[dict]:
         """Per-case rows: {index, name, cells: {runner: letter}}."""
@@ -374,46 +439,136 @@ class PaperResults:
         }
 
     @cached_property
-    def ungrounded_artifacts_all_boards(self) -> int:
-        """Artifacts (any board, any runner) with an ungrounded numeric."""
-        count = 0
+    def v2_v3_transitions(self) -> dict[str, int]:
+        """Case-level gate transitions between v2 and v3, split by kind.
+
+        ``kill_to_pass`` counts fable's harness-killed v2 rows (no artifact,
+        600-second ceiling in the recorded error) that pass on v3 — movement
+        mechanically explained by the timeout fix rather than by either
+        sampling noise or validator change.
+        """
+        counts = {"fail_to_pass": 0, "pass_to_fail": 0, "kill_to_pass": 0}
+        for runner in self.stats["v3"]:
+            v2_rows = {
+                r["eval_case"]["index"]: r
+                for r in self.boards["v2"][runner]["results"]
+            }
+            v3_rows = {
+                r["eval_case"]["index"]: r
+                for r in self.boards["v3"][runner]["results"]
+            }
+            for index, v2_row in v2_rows.items():
+                v3_row = v3_rows[index]
+                before, after = gate_pass(v2_row), gate_pass(v3_row)
+                if before and not after:
+                    counts["pass_to_fail"] += 1
+                elif after and not before:
+                    if _is_600s_kill(v2_row):
+                        counts["kill_to_pass"] += 1
+                    else:
+                        counts["fail_to_pass"] += 1
+        return counts
+
+    @cached_property
+    def extremes_yardstick(self) -> dict[str, int]:
+        """Smallest leader-vs-tail gap on v3 against the largest v2→v3 delta."""
+        v3 = self.stats["v3"]
+        leaders = {"gpt-5.5", "sol"}
+        tail = {"luna", "opus-5"}
+        min_gap = min(
+            v3[a].gate_passes - v3[b].gate_passes for a in leaders for b in tail
+        )
+        max_delta = max(abs(d) for d in self.v2_v3_deltas.values())
+        return {"min_gap": min_gap, "max_delta": max_delta}
+
+    # ------------------------------------------------------------------
+    # Grounding scan totals
+    # ------------------------------------------------------------------
+
+    @cached_property
+    def grounding_totals(self) -> dict[str, int]:
+        """Literals the grounding scan checked across every artifact."""
+        artifacts = 0
+        literals = 0
+        flagged_artifacts = 0
         for runners in self.boards.values():
             for payload in runners.values():
                 for r in payload["results"]:
                     metrics = r.get("metrics")
                     if metrics is None:
                         continue
+                    artifacts += 1
+                    literals += (metrics.get("grounded_numeric_count") or 0) + (
+                        metrics.get("ungrounded_numeric_count") or 0
+                    )
                     if metrics.get("ungrounded_numeric_count") != 0:
-                        count += 1
-        return count
+                        flagged_artifacts += 1
+        return {
+            "artifacts": artifacts,
+            "literals": literals,
+            "flagged_artifacts": flagged_artifacts,
+        }
+
+    # ------------------------------------------------------------------
+    # Timeout policy (v3 execution identity) and the v2 fable truncation
+    # ------------------------------------------------------------------
 
     @cached_property
-    def artifacts_all_boards(self) -> int:
-        return sum(
-            1
-            for runners in self.boards.values()
-            for payload in runners.values()
-            for r in payload["results"]
-            if r.get("metrics") is not None
-        )
+    def v3_timeout_policy(self) -> dict:
+        """The recorded v3 runner_timeouts, identical across runners."""
+        policies = {
+            json.dumps(
+                payload["evidence"]["execution_identity"]["runner_timeouts"],
+                sort_keys=True,
+            )
+            for payload in self.boards["v3"].values()
+        }
+        (policy,) = policies
+        parsed = json.loads(policy)
+        case_budgets = {
+            payload["evidence"]["execution_identity"]["case_timeout_seconds"]
+            for payload in self.boards["v3"].values()
+        }
+        (case_budget,) = case_budgets
+        return {
+            "case_budget_s": int(case_budget),
+            "claude_wall_s": int(parsed["claude"]["wall_seconds"]),
+            "codex_short_wall_s": int(
+                parsed["codex"]["short_source"]["wall_seconds"]
+            ),
+            "codex_short_idle_s": int(
+                parsed["codex"]["short_source"]["idle_seconds"]
+            ),
+            "codex_long_wall_s": int(
+                parsed["codex"]["long_source"]["wall_seconds"]
+            ),
+            "codex_long_idle_s": int(
+                parsed["codex"]["long_source"]["idle_seconds"]
+            ),
+        }
 
-    # ------------------------------------------------------------------
-    # The v2 fable truncation (board v2's harness defect, quantified)
-    # ------------------------------------------------------------------
+    @cached_property
+    def v3_codex_max_seconds(self) -> int:
+        """Longest codex-backend case on v3, all rows."""
+        return max(
+            s.max_seconds
+            for s in self.stats["v3"].values()
+            if s.backend == "codex"
+        )
 
     @cached_property
     def v2_fable(self) -> dict:
         rows = self.boards["v2"]["fable"]["results"]
-        killed = [
-            r
-            for r in rows
-            if r.get("metrics") is None and r.get("success") is not True
-        ]
+        killed = [r for r in rows if _is_600s_kill(r)]
         completed = [r for r in rows if r.get("metrics") is not None]
+        assert len(killed) + len(completed) == len(rows)
         return {
             "killed": len(killed),
             "completed": len(completed),
             "completed_passes": sum(1 for r in completed if gate_pass(r)),
+            "completed_median_s": self.stats["v2"][
+                "fable"
+            ].completed_median_seconds,
         }
 
     @cached_property
@@ -427,12 +582,96 @@ class PaperResults:
         }
 
     # ------------------------------------------------------------------
-    # Effort probe (frozen markdown record, parsed not retyped)
+    # Integrity notes, derived from frozen artifacts
+    # ------------------------------------------------------------------
+
+    @cached_property
+    def discarded_opus5(self) -> dict:
+        payload = self.discarded["v2-opus5-quota-poisoned"]
+        rows = payload["results"]
+        limit_rows = [
+            r for r in rows if "session limit" in str(r.get("error") or "")
+        ]
+        durations = sorted(
+            (r.get("duration_ms") or 0) / 1000.0 for r in limit_rows
+        )
+        return {
+            "cases": len(rows),
+            "gate_passes": sum(1 for r in rows if gate_pass(r)),
+            "limit_errors": len(limit_rows),
+            "limit_median_s": round(median(durations), 1) if durations else None,
+        }
+
+    @cached_property
+    def v2_opus5_durations(self) -> dict:
+        s = self.stats["v2"]["opus-5"]
+        return {
+            "min_s": int(round(min(s.durations_ms) / 1000.0)),
+            "max_s": int(round(max(s.durations_ms) / 1000.0)),
+        }
+
+    @cached_property
+    def v2_luna_review_coverage(self) -> int:
+        return self.stats["v2"]["luna"].review_score_count
+
+    # ------------------------------------------------------------------
+    # Case 04 and expression dates
+    # ------------------------------------------------------------------
+
+    @cached_property
+    def case04(self) -> dict:
+        """income_tax_rate_bands across v1+v2 (fails) and v3 (passers)."""
+        total_runs = 0
+        fails = 0
+        kills = 0
+        for board in ("v1", "v2"):
+            for payload in self.boards[board].values():
+                (row,) = [
+                    r
+                    for r in payload["results"]
+                    if r["eval_case"]["name"] == "income_tax_rate_bands"
+                ]
+                total_runs += 1
+                if not gate_pass(row):
+                    fails += 1
+                    if _is_600s_kill(row):
+                        kills += 1
+        passers = []
+        for s in self.ranked("v3"):
+            (row,) = [
+                r
+                for r in self.boards["v3"][s.runner]["results"]
+                if r["eval_case"]["name"] == "income_tax_rate_bands"
+            ]
+            if gate_pass(row):
+                passers.append(s.runner)
+        assert fails == total_runs
+        return {
+            "runs_v1_v2": total_runs,
+            "fails": fails,
+            "kills": kills,
+            "attempts_failed": fails - kills,
+            "v3_passers": passers,
+        }
+
+    @cached_property
+    def v3_expression_dates(self) -> set[str]:
+        """Per-provision expression dates recorded in the v3 attestations."""
+        return {
+            r["source_attestation"]["expression_date"]
+            for payload in self.boards["v3"].values()
+            for r in payload["results"]
+        }
+
+    # ------------------------------------------------------------------
+    # Effort probe (frozen markdown record, hash-verified and parsed)
     # ------------------------------------------------------------------
 
     @cached_property
     def effort_probe(self) -> dict[str, list[dict]]:
-        text = (SNAPSHOT_DIR / self.manifest["effort_probe"]["file"]).read_text()
+        entry = self.manifest["effort_probe"]
+        raw = self._load_verified(entry["file"], entry["sha256"])
+        text = raw.decode("utf-8")
         blocks: dict[str, list[dict]] = {}
         current: list[dict] | None = None
         for line in text.splitlines():
@@ -463,6 +702,12 @@ class PaperResults:
         (row,) = [x for x in self.effort_probe[backend] if x["level"] == level]
         return row
 
+    def probe_n(self, backend: str) -> int:
+        """Samples per level, derived from the rows (the header lies)."""
+        ns = {len(row["answers"]) for row in self.effort_probe[backend]}
+        (n,) = ns
+        return n
+
     @cached_property
     def claude_probe_answer_sets(self) -> set[str]:
         """Distinct answers claude-opus-5 gave across every probe level."""
@@ -470,6 +715,12 @@ class PaperResults:
             a
             for row in self.effort_probe["claude"]
             for a in row["answers"]
+        }
+
+    @cached_property
+    def claude_probe_cost_medians(self) -> dict[str, float]:
+        return {
+            row["level"]: row["median"] for row in self.effort_probe["claude"]
         }
 
     # ------------------------------------------------------------------
@@ -480,9 +731,16 @@ class PaperResults:
     def money(x: float) -> str:
         return f"${x:.2f}"
 
+    @staticmethod
+    def thousands(x: float) -> str:
+        return f"{x:,.0f}"
+
     def encoder(self, board: str) -> str:
         meta = self.board_meta(board)
         return f"{meta['encoder_version']} ({meta['encoder_commit'][:8]})"
+
+    def encoder_version(self, board: str) -> str:
+        return self.board_meta(board)["encoder_version"]
 
     def run_date(self, board: str) -> str:
         started = self.board_meta(board)["runners"][0]["run_started_at"]
@@ -496,34 +754,6 @@ class PaperResults:
     def fable_cost_multiple_of_sol(self) -> str:
         v3 = self.stats["v3"]
         return f"{v3['fable'].cost / v3['sol'].cost:.1f}"
-
-    @cached_property
-    def case04_fails_v1_v2(self) -> int:
-        """Model-runs that failed income_tax_rate_bands across v1 and v2."""
-        count = 0
-        for board in ("v1", "v2"):
-            for payload in self.boards[board].values():
-                (row,) = [
-                    r
-                    for r in payload["results"]
-                    if r["eval_case"]["name"] == "income_tax_rate_bands"
-                ]
-                if not gate_pass(row):
-                    count += 1
-        return count
-
-    @cached_property
-    def case04_v3_passers(self) -> list[str]:
-        passers = []
-        for s in self.ranked("v3"):
-            (row,) = [
-                r
-                for r in self.boards["v3"][s.runner]["results"]
-                if r["eval_case"]["name"] == "income_tax_rate_bands"
-            ]
-            if gate_pass(row):
-                passers.append(s.runner)
-        return passers
 
     # ------------------------------------------------------------------
     # Verification against the published board records
@@ -569,6 +799,14 @@ class PaperResults:
                     f"{board} total cost {total} != published "
                     f"{expected['total_cost']}"
                 )
+        if self.probe_level("codex", "low")["median"] != PUBLISHED_PROBE[
+            ("codex", "low")
+        ] or self.probe_level("codex", "xhigh")["median"] != PUBLISHED_PROBE[
+            ("codex", "xhigh")
+        ]:
+            problems.append("codex probe medians drifted from the record")
+        if self.claude_probe_answer_sets != PUBLISHED_PROBE[("claude", "answers")]:
+            problems.append("claude probe answers drifted from the record")
         if problems:
             raise AssertionError(
                 "Derived values disagree with the published board records:\n"
@@ -576,9 +814,18 @@ class PaperResults:
             )
         return (
             f"verified against published records: "
-            f"{sum(len(e['gate']) for e in PUBLISHED.values())} gate counts, "
-            f"medians, v3 artifacts/timeouts/costs"
+            f"{sum(len(e['gate']) for e in PUBLISHED.values())} runner gate "
+            f"counts, medians, v3 artifacts/timeouts/costs, probe medians"
         )
+
+
+def _is_600s_kill(result: dict) -> bool:
+    """A v2 Claude-path harness kill: no artifact, 600s ceiling in the error."""
+    return (
+        result.get("metrics") is None
+        and result.get("success") is not True
+        and "600 seconds" in str(result.get("error") or "")
+    )
 
 
 r = PaperResults()
@@ -587,7 +834,6 @@ r = PaperResults()
 if __name__ == "__main__":
     print(r.verify())
     for board in BOARD_ORDER:
-        meta = r.board_meta(board)
         print(f"\n{board} — encoder {r.encoder(board)} — run {r.run_date(board)}")
         for s in r.ranked(board):
             print(
@@ -599,11 +845,18 @@ if __name__ == "__main__":
             )
         print(f"  total {r.money(r.total_cost(board))}")
     print(f"\nv2→v3 deltas: {r.v2_v3_deltas}")
-    print(f"ungrounded artifacts, all boards: {r.ungrounded_artifacts_all_boards}")
-    print(f"artifacts, all boards: {r.artifacts_all_boards}")
+    print(f"v2→v3 transitions: {r.v2_v3_transitions}")
+    print(f"extremes yardstick: {r.extremes_yardstick}")
+    print(f"grounding totals: {r.grounding_totals}")
+    print(f"v3 timeout policy: {r.v3_timeout_policy}")
+    print(f"v3 codex max: {r.v3_codex_max_seconds}s")
     print(f"v2 fable: {r.v2_fable}")
     print(f"v3 fable timeout: {r.v3_fable_timeout}")
-    print(f"case 04 v1+v2 fails: {r.case04_fails_v1_v2}; v3 passers: {r.case04_v3_passers}")
-    print(f"probe terra low: {r.probe_level('codex', 'low')}")
-    print(f"probe terra xhigh: {r.probe_level('codex', 'xhigh')}")
-    print(f"probe claude answers: {r.claude_probe_answer_sets}")
+    print(f"case04: {r.case04}")
+    print(f"discarded opus-5: {r.discarded_opus5}")
+    print(f"v2 opus-5 durations: {r.v2_opus5_durations}")
+    print(f"v2 luna review coverage: {r.v2_luna_review_coverage}")
+    print(f"v3 expression dates: {r.v3_expression_dates}")
+    print(f"backends used: {r.backends_used}")
+    print(f"probe N: codex={r.probe_n('codex')} claude={r.probe_n('claude')}")
+    print(f"claude probe cost medians: {r.claude_probe_cost_medians}")

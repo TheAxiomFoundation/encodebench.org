@@ -204,17 +204,31 @@
           "sha256_json": "f5bf3abb1e13ec91423ba4b8bdbd024bfcdc85f423e881daf2efa11734410bf1"
         }
       ],
-      "source_runs_dir": "/Users/maxghenis/TheAxiomFoundation/ops/model-capability-eval/rig/runs"
+      "source_runs_dir": "/Users/maxghenis/TheAxiomFoundation/ops/model-capability-eval/rig/runs.v3-c69a51a4"
+    }
+  },
+  "discarded_runs": {
+    "v2-opus5-quota-poisoned": {
+      "discarded": true,
+      "file": "discarded/v2-opus5-quota-poisoned.results.json.gz",
+      "reason": "opus-5's first v2 attempt: its encoder and its reviewer drew on one subscription account, which hit its session limit mid-run. Discarded as a measurement failure and re-run on split accounts; the clean re-run is boards/v2/opus-5.",
+      "sha256_gz": "bb852c5e4d43408c3cd04e23c1245e48faae697f5ad4bcedcc062d83d9174a41",
+      "sha256_json": "05342962eae9f95bcdefd629a69e3f0e09a396340894518d098dd55037194513"
     }
   },
   "effort_probe": {
     "file": "effort-probe-results.md",
-    "note": "Receiver-behavior probe recorded 2026-07-26: codex model_reasoning_effort sweep on gpt-5.6-terra and claude --effort sweep on claude-opus-5, N per level as recorded in the file.",
+    "note": "Receiver-behavior probe recorded 2026-07-26: codex model_reasoning_effort sweep on gpt-5.6-terra and claude --effort sweep on claude-opus-5. The file header says N=5 per level; that holds for the codex arm only \u2014 the claude rows carry three samples per level, and the paper derives N per arm from the rows.",
     "sha256": "4d893b9c2f82a099c96deae480fe5811c5c969fa10690c3b249c9ed87632c1f8"
   },
   "schema": "encodebench-paper-snapshot/v1",
   "snapshot_dir": "20260807",
   "suite": "EncodeBench UK v1",
   "suite_manifest": "benchmarks/encodebench_uk_v1.yaml",
+  "suite_manifest_frozen": {
+    "file": "encodebench_uk_v1.yaml",
+    "sha256": "95ede66bb8a9cb80255d5e4b9d05295e5cad382cc1a3d48db32515a22aa9346c",
+    "source_commit": "c69a51a4"
+  },
   "tracking_issue": "https://github.com/TheAxiomFoundation/axiom-encode/issues/1189"
 }
