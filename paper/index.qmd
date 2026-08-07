@@ -74,7 +74,8 @@ delta_line = ", ".join(
     f"{name} {_signed(d)}"
     for name, d in sorted(deltas.items(), key=lambda kv: -kv[1])
 )
-moved_count = sum(1 for d in deltas.values() if d != 0)
+_WORDS = {2: "two", 3: "three", 4: "four", 5: "five", 6: "six"}
+moved_word = _WORDS[sum(1 for d in deltas.values() if d != 0)]
 delta_sum = _signed(sum(deltas.values()))
 
 luna_path = ", ".join(str(r.gate_by_board["luna"][b]) for b in BOARD_ORDER)
@@ -256,8 +257,8 @@ sits beside the gates rather than inside them. On board v3 its mean
 scores span `{python} review_lo` to `{python} review_hi` of 10 across all
 six runners — a band too narrow to separate the leaders, which is why it
 never gets to try. The oracle column stays empty until the PolicyEngine UK
-runtime path is verified for eval cases. Latency and cost report as
-measured.
+runtime path is verified for eval cases. The latency and cost columns
+carry measured values.
 
 The roster carries a control: `gpt-5.6-luna`, which prior internal
 measurement found weak at exactly this task. Across the three boards it
@@ -470,7 +471,7 @@ table(
 
 Between board v2 (encoder 0.2.1380, `{python} r.run_date("v2")`) and board
 v3 (0.2.1382, `{python} r.run_date("v3")`), gate-pass moved
-`{python} delta_line` — `{python} str(moved_count)` of six models moved,
+`{python} delta_line` — `{python} moved_word` of six models moved,
 net `{python} delta_sum`. Movement that skewed positive rules out symmetric
 run-to-run noise as the whole story. Two causes confound, and two runs
 cannot separate them: model nondeterminism, and real toolchain change — the

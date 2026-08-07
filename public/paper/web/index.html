@@ -141,7 +141,7 @@ and reports means with spread in place of single draws.
 <h2 id="the-task" class="anchored">The task</h2>
 <p>One case gives one model one provision. The harness resolves the provision’s text from a signed corpus release — every run here pins uk-rulespec-2026-07-14, verified against its publishing key — and places it in a cold workspace: the source text, stubs for defined terms, and no existing encoding of the target. The model writes the RuleSpec module: the parameters and formulas the provision defines, citations back to it, effective dates, and the companion tests the repository requires of every rule. The suite covers UK law because the UK repository reached the signed-release toolchain the eval requires first; a US suite follows its release migration.</p>
 <p>Capability cases run cold for a reason. A workspace with repository context includes whatever encoding of the provision already merged, so a capability score would come to measure copying, and would drift as the repository grows. Cold workspaces still carry definition stubs and canonical-concept context, identically for every model. The last three cases run with repository context as oracle candidates: they sit on the PolicyEngine UK comparison path and will carry a live oracle check once that plumbing is verified for eval cases; until then they grade on the same deterministic gates as everything else.</p>
-<div id="82913cb0" class="cell" data-execution_count="2">
+<div id="35d9cd18" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-display cell-output-markdown" data-execution_count="2">
 <table class="caption-top">
 <caption>The sixteen cases. Cases 1–13 run cold; cases 14–16 run with repository context as oracle candidates. SSCBA = Social Security Contributions and Benefits Act; ITEPA = Income Tax (Earnings and Pensions) Act; CB = Child Benefit (General).</caption>
@@ -281,11 +281,11 @@ and reports means with spread in place of single draws.
 <p>Two cases exist to catch invented numbers. <code>child_benefit_entitlement</code> supplies entitlement conditions whose weekly amounts live in a different instrument — the 2006 regulations — so any rate literal in that encoding is an invention. <code>finance_act_2026_charge</code> encodes an act that postdates most of the roster’s training data, so the encoding must come from the supplied text rather than recall.</p>
 <h2 id="four-gates-and-a-fold" class="anchored">Four gates and a fold</h2>
 <p>A case passes for a model only when four deterministic checks pass: the encode returns an artifact, the artifact compiles in the Axiom rules engine, repository validation passes — including the companion tests — and the grounding scan finds zero numeric literals absent from the source text. The gate-pass count is the headline, and nothing else folds into it.</p>
-<p>Everything else reports alongside. A pinned reviewer model scores each encoding’s statutory fidelity — a single, noisy judge, and one whose own family competes on the board, so it cannot referee neutrally and its score sits beside the gates rather than inside them. On board v3 its mean scores span 7.8 to 8.3 of 10 across all six runners — a band too narrow to separate the leaders, which is why it never gets to try. The oracle column stays empty until the PolicyEngine UK runtime path is verified for eval cases. Latency and cost report as measured.</p>
+<p>Everything else reports alongside. A pinned reviewer model scores each encoding’s statutory fidelity — a single, noisy judge, and one whose own family competes on the board, so it cannot referee neutrally and its score sits beside the gates rather than inside them. On board v3 its mean scores span 7.8 to 8.3 of 10 across all six runners — a band too narrow to separate the leaders, which is why it never gets to try. The oracle column stays empty until the PolicyEngine UK runtime path is verified for eval cases. The latency and cost columns carry measured values.</p>
 <p>The roster carries a control: <code>gpt-5.6-luna</code>, which prior internal measurement found weak at exactly this task. Across the three boards it scored 5, 5, 8 of 16 — at or near the bottom every time. A board that failed to separate the control from the leaders would indict the instrument, not the models.</p>
 <p>Runs fold into one board only when the suite name, the ordered case identities, the corpus release, and the normalized score-affecting toolchain identity all match. Runner sets may differ — a model added later folds cleanly without re-running incumbents — but a changed encoder refuses to fold: a new toolchain starts a new board by construction. Two of this paper’s findings turn on that refusal.</p>
 <h2 id="three-boards" class="anchored">Three boards</h2>
-<div id="7a46a3af" class="cell" data-execution_count="3">
+<div id="3a3942fd" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-display cell-output-markdown" data-execution_count="3">
 <table class="caption-top">
 <caption>The three boards. Costs are API-equivalents: codex-backend tokens priced at published July 2026 rates, Claude-backend costs as the CLI’s own recorded per-call figures. All runs drew on subscription-billed seats.</caption>
@@ -325,7 +325,7 @@ and reports means with spread in place of single draws.
 </div>
 </div>
 <p>Board v1 piloted the suite on four codex-backend models. Boards v2 and v3 ran the full six-model roster one day apart on successive encoder versions — v2 on the encoder that carried the timeout defect of <a href="#sec-timeout" class="quarto-xref">Section&nbsp;5.2</a>, v3 on the encoder that fixed it. v3 stands as the current board.</p>
-<div id="ff9e81bc" class="cell" data-execution_count="4">
+<div id="a2fb8cdd" class="cell" data-execution_count="4">
 <div class="cell-output cell-output-display cell-output-markdown" data-execution_count="4">
 <table class="caption-top" style="width:100%;">
 <caption>Board v3 — encoder 0.2.1382, run 2026-07-26. Gate pass counts cases clearing all four gates. T counts cases that exhausted the recorded time budget; compile, ci, and grounded rates cover produced artifacts only. Reviewer and oracle columns are advisory and live in the board record.</caption>
@@ -424,7 +424,7 @@ and reports means with spread in place of single draws.
 </table>
 </div>
 </div>
-<div id="d19b11ef" class="cell" data-execution_count="5">
+<div id="cbc256a5" class="cell" data-execution_count="5">
 <div class="cell-output cell-output-display cell-output-markdown" data-execution_count="5">
 <table class="caption-top" style="width:100%;">
 <caption>Board v3 per-case grid. P = gate pass, F = validation failure, T = timeout, E = no artifact.</caption>
@@ -615,7 +615,7 @@ Figure&nbsp;1: Gate passes per model across the three boards. Panels order by bo
 <p>First, the extremes separate. <code>gpt-5.5</code> and <code>gpt-5.6-sol</code> clear 15/16 and 14/16 while the control and <code>claude-opus-5</code> sit at 8/16 and 6/16 — gaps far wider than anything the run-to-run movement produced.</p>
 <p>Second, no model invented a number. Across the 250 artifacts produced over all three boards, the grounding scan found 0 with an ungrounded numeric — the two trap cases included. Frontier models do not fail this suite by fabricating rates; they fail it by writing encodings whose tests prove them wrong. The verification burden this implies sits in test quality, not fact-checking literals.</p>
 <p>Third, speed and cost split by family, not by score. The codex runners’ median case ran 34–50 seconds on v3; fable’s ran 266 seconds and emitted 458,159 output tokens, putting its suite cost at $33.02 against $5.66 for sol — 5.8× the cost for a lower score on this board.</p>
-<div id="f20fdcb9" class="cell" data-execution_count="7">
+<div id="ad57c124" class="cell" data-execution_count="7">
 <div class="cell-output cell-output-display cell-output-markdown" data-execution_count="7">
 <table class="caption-top">
 <caption>Board v3 cost annex, API-equivalent. The Claude CLI reports its own per-call cost, recorded verbatim; recomputing it from a rate table would mean inventing a rate for claude-opus-5, which has no published price in the reference the rig bundles. The Claude CLI also reports near-zero input tokens in this mode; its recorded cost already prices the full exchange.</caption>
@@ -700,7 +700,7 @@ Figure&nbsp;1: Gate passes per model across the three boards. Panels order by bo
 </div>
 <h2 id="what-it-takes-to-measure-this-honestly" class="anchored">What it takes to measure this honestly</h2>
 <h3 id="sec-variance" class="anchored">Scores bind to the toolchain</h3>
-<p>Between board v2 (encoder 0.2.1380, 2026-07-25) and board v3 (0.2.1382, 2026-07-26), gate-pass moved gpt-5.5 +4, opus-5 +4, luna +3, fable +3, terra 0, sol -1 — 5 of six models moved, net +13. Movement that skewed positive rules out symmetric run-to-run noise as the whole story. Two causes confound, and two runs cannot separate them: model nondeterminism, and real toolchain change — the validator gained typed numeric occurrences and a locale profile between the boards, alongside the timeout fix. The fold’s refusal to combine boards across encoder versions stopped looking like bookkeeping here and started doing its job.</p>
+<p>Between board v2 (encoder 0.2.1380, 2026-07-25) and board v3 (0.2.1382, 2026-07-26), gate-pass moved gpt-5.5 +4, opus-5 +4, luna +3, fable +3, terra 0, sol -1 — five of six models moved, net +13. Movement that skewed positive rules out symmetric run-to-run noise as the whole story. Two causes confound, and two runs cannot separate them: model nondeterminism, and real toolchain change — the validator gained typed numeric occurrences and a locale profile between the boards, alongside the timeout fix. The fold’s refusal to combine boards across encoder versions stopped looking like bookkeeping here and started doing its job.</p>
 <p>Four consequences govern how to read any single board:</p>
 <ul>
 <li><strong>A board is one sample.</strong> gpt-5.5 leads v3 at 15/16 with sol at 14/16 — one case apart, from a model that moved four cases between boards. The order of ranks one and two is not a finding.</li>
