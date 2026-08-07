@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<base href="/paper/web/">
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Max Ghenis">
+<meta name="dcterms.date" content="2026-08-07">
+
+<title>EncodeBench</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-html/tabby.min.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-html-640605f58ae58ee79329c070719e555b.min.css" rel="stylesheet" append-hash="true" data-mode="light">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="encodebench-tokens.css">
+<link rel="stylesheet" href="encodebench-paper.css">
+<meta name="citation_title" content="EncodeBench">
+<meta name="citation_abstract" content="EncodeBench measures whether frontier language models can encode statutes
+into RuleSpec, the Axiom Foundation&amp;amp;#039;s format for computable law:
+executable rules that cite their sources, carry their effective dates, and
+ship with tests. Sixteen UK provisions, resolved from a signed corpus
+release, grade on deterministic gates — the encoding compiles, passes the
+repository's validation including its companion tests, and contains no
+number the source text lacks. Three boards to date cover six models. This
+paper reports the boards and, with equal weight, what running them taught
+about measurement: scores move with the toolchain that produced them, so a
+score is citable only against its encoder version; the harness gave
+different model families different exams before an audit caught it; and a
+reasoning-effort setting that appeared to control the comparison did
+nothing at all. The gates that grade the models also caught the harness.
+Board v4, pre-registered here, runs on an encoder that closes these gaps
+and reports means with spread in place of single draws.
+">
+<meta name="citation_author" content="Max Ghenis">
+<meta name="citation_publication_date" content="2026-08-07">
+<meta name="citation_cover_date" content="2026-08-07">
+<meta name="citation_year" content="2026">
+<meta name="citation_online_date" content="2026-08-07">
+<meta name="citation_language" content="en">
+<meta name="citation_reference" content="citation_title=PolicyBench: Benchmarking no-tool tax-and-benefit estimation in frontier language models;,citation_author=Max Ghenis;,citation_publication_date=2026;,citation_cover_date=2026;,citation_year=2026;,citation_fulltext_html_url=https://policybench.org/paper;">
+<meta name="citation_reference" content="citation_title=SWE-bench: Can language models resolve real-world GitHub issues?;,citation_author=Carlos E. Jimenez;,citation_author=John Yang;,citation_author=Alexander Wettig;,citation_author=Shunyu Yao;,citation_author=Kexin Pei;,citation_author=Ofir Press;,citation_author=Karthik Narasimhan;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_fulltext_html_url=https://arxiv.org/abs/2310.06770;,citation_conference_title=International conference on learning representations;">
+<meta name="citation_reference" content="citation_title=Evaluating large language models trained on code;,citation_author=Mark Chen;,citation_author=Jerry Tworek;,citation_author=Heewoo Jun;,citation_author=Qiming Yuan;,citation_author=Henrique Ponde de Oliveira Pinto;,citation_author=Jared Kaplan;,citation_author=others;,citation_publication_date=2021;,citation_cover_date=2021;,citation_year=2021;,citation_fulltext_html_url=https://arxiv.org/abs/2107.03374;">
+<meta name="citation_reference" content="citation_title=LegalBench: A collaboratively built benchmark for measuring legal reasoning in large language models;,citation_author=Neel Guha;,citation_author=Julian Nyarko;,citation_author=Daniel E. Ho;,citation_author=Christopher Ré;,citation_author=Adam Chilton;,citation_author=others;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_fulltext_html_url=https://arxiv.org/abs/2308.11462;,citation_conference_title=Advances in neural information processing systems, datasets and benchmarks track;">
+<meta name="citation_reference" content="citation_title=Catala: A programming language for the law;,citation_author=Denis Mérigoux;,citation_author=Nicolas Chataing;,citation_author=Jonathan Protzenko;,citation_publication_date=2021;,citation_cover_date=2021;,citation_year=2021;,citation_fulltext_html_url=https://arxiv.org/abs/2103.03198;,citation_issue=ICFP;,citation_volume=5;,citation_journal_title=Proceedings of the ACM on Programming Languages;">
+<meta name="citation_reference" content="citation_title=Cracking the code: Rulemaking for humans and machines;,citation_author=James Mohun;,citation_author=Alex Roberts;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_technical_report_institution=OECD Observatory of Public Sector Innovation;,citation_technical_report_number=42;">
+</head>
+
+<body>
+
+
+<header id="title-block-header">
+<h1 class="title">EncodeBench</h1>
+<p class="subtitle">Measuring whether language models can write law as code, and what it takes to measure that honestly</p>
+<p class="author">Max Ghenis</p>
+
+<p class="date">2026-08-07</p>
+<div class="abstract">
+<div class="abstract-title">Abstract</div>
+<p>EncodeBench measures whether frontier language models can encode statutes into RuleSpec, the Axiom Foundation’s format for computable law: executable rules that cite their sources, carry their effective dates, and ship with tests. Sixteen UK provisions, resolved from a signed corpus release, grade on deterministic gates — the encoding compiles, passes the repository’s validation including its companion tests, and contains no number the source text lacks. Three boards to date cover six models. This paper reports the boards and, with equal weight, what running them taught about measurement: scores move with the toolchain that produced them, so a score is citable only against its encoder version; the harness gave different model families different exams before an audit caught it; and a reasoning-effort setting that appeared to control the comparison did nothing at all. The gates that grade the models also caught the harness. Board v4, pre-registered here, runs on an encoder that closes these gaps and reports means with spread in place of single draws.</p>
+</div>
+</header>
+
+<nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction">Introduction</a></li>
+  <li><a href="#the-task" id="toc-the-task">The task</a></li>
+  <li><a href="#four-gates-and-a-fold" id="toc-four-gates-and-a-fold">Four gates and a fold</a></li>
+  <li><a href="#three-boards" id="toc-three-boards">Three boards</a></li>
+  <li><a href="#what-it-takes-to-measure-this-honestly" id="toc-what-it-takes-to-measure-this-honestly">What it takes to measure this honestly</a>
+  <ul>
+  <li><a href="#sec-variance" id="toc-sec-variance">Scores bind to the toolchain</a></li>
+  <li><a href="#sec-timeout" id="toc-sec-timeout">A timeout that graded slowness as failure</a></li>
+  <li><a href="#sec-effort" id="toc-sec-effort">The effort setting that did nothing</a></li>
+  <li><a href="#sec-parity" id="toc-sec-parity">Three backends, three exams</a></li>
+  <li><a href="#sec-case04" id="toc-sec-case04">Case 04, flagged and retracted</a></li>
+  <li><a href="#sec-integrity" id="toc-sec-integrity">Integrity notes</a></li>
+  </ul></li>
+  <li><a href="#board-v4-pre-registered" id="toc-board-v4-pre-registered">Board v4, pre-registered</a></li>
+  <li><a href="#limitations" id="toc-limitations">Limitations</a></li>
+  <li><a href="#reproducibility" id="toc-reproducibility">Reproducibility</a></li>
+  <li><a href="#references" id="toc-references">References</a></li>
+  </ul>
+</nav>
+<h2 id="introduction" class="anchored">Introduction</h2>
+<p>The Axiom Foundation publishes statutes as executable code. An AI encoder drafts each encoding in RuleSpec — parameters and formulas that cite their statutory authority, carry their effective dates, and ship with companion tests — and a deterministic gauntlet decides what merges. That design turns model choice into an engineering question with money and correctness attached: which model drafts law-as-code well enough to sit inside a production pipeline, and how would you know?</p>
+<p>EncodeBench makes the question measurable. It formalizes the informal bake-off the Axiom Foundation ran in July 2026 to route its own encoder, replacing a scratchpad comparison with a pinned suite, a deterministic fold, and public records. Code benchmarks grade models on tests <span class="citation" data-cites="chen2021humaneval jimenez2024swebench">(<span class="nocase">Chen et al.</span> 2021; Jimenez et al. 2024)</span> and legal benchmarks grade them on reasoning tasks <span class="citation" data-cites="guha2023legalbench">(<span class="nocase">Guha et al.</span> 2023)</span>; encoding law sits at the seam, where the output is code and the ground truth is a statute. Languages built for that ground truth <span class="citation" data-cites="merigoux2021catala">(Mérigoux et al. 2021)</span> and rules-as-code programs in government <span class="citation" data-cites="mohun2020cracking">(Mohun and Roberts 2020)</span> define the target; EncodeBench measures who can hit it. Its sister benchmark PolicyBench <span class="citation" data-cites="policybench2026">(Ghenis 2026)</span> asks whether a model can compute the law; EncodeBench asks whether it can write it.</p>
+<p>Three boards in, the results worth the most attention concern the measurement itself. Between two full-roster runs a day apart, five of six models moved, and the movement skewed positive — so a single board reads as one sample, not a ranking. A read-only audit found the three encoder backends administering different exams. The setting that appeared to pin reasoning effort did nothing on any backend. Each finding carries a disclosure against the boards it affects, each fix landed in the open, and the same deterministic machinery that grades the models caught every one of them. The paper reports the boards together with everything known to weaken them, then pre-registers the run that removes the weaknesses.</p>
+<h2 id="the-task" class="anchored">The task</h2>
+<p>One case gives one model one provision. The harness resolves the provision’s text from a signed corpus release — every run here pins uk-rulespec-2026-07-14, verified against its publishing key — and places it in a cold workspace: the source text, stubs for defined terms, and no existing encoding of the target. The model writes the RuleSpec module: the parameters and formulas the provision defines, citations back to it, effective dates, and the companion tests the repository requires of every rule. The suite covers UK law because the UK repository reached the signed-release toolchain the eval requires first; a US suite follows its release migration.</p>
+<p>Capability cases run cold for a reason. A workspace with repository context includes whatever encoding of the provision already merged, so a capability score would come to measure copying, and would drift as the repository grows. Cold workspaces still carry definition stubs and canonical-concept context, identically for every model. The last three cases run with repository context as oracle candidates: they sit on the PolicyEngine UK comparison path and will carry a live oracle check once that plumbing is verified for eval cases; until then they grade on the same deterministic gates as everything else.</p>
+<div id="82913cb0" class="cell" data-execution_count="2">
+<div class="cell-output cell-output-display cell-output-markdown" data-execution_count="2">
+<table class="caption-top">
+<caption>The sixteen cases. Cases 1–13 run cold; cases 14–16 run with repository context as oracle candidates. SSCBA = Social Security Contributions and Benefits Act; ITEPA = Income Tax (Earnings and Pensions) Act; CB = Child Benefit (General).</caption>
+<colgroup>
+<col style="width: 5%">
+<col style="width: 32%">
+<col style="width: 20%">
+<col style="width: 28%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>case</th>
+<th>provision</th>
+<th>probes</th>
+<th>family</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>01</td>
+<td><code>vat_standard_rate</code></td>
+<td>Value Added Tax Act 1994 s. 2</td>
+<td>flat-rate control case</td>
+<td>parameters</td>
+</tr>
+<tr class="even">
+<td>02</td>
+<td><code>class_2_nic</code></td>
+<td>SSCBA 1992 s. 13</td>
+<td>weekly flat amount plus a small-profits threshold</td>
+<td>parameters</td>
+</tr>
+<tr class="odd">
+<td>03</td>
+<td><code>class_1_secondary_nic</code></td>
+<td>SSCBA 1992 s. 9</td>
+<td>employer-side rate and secondary threshold</td>
+<td>parameters</td>
+</tr>
+<tr class="even">
+<td>04</td>
+<td><code>income_tax_rate_bands</code></td>
+<td>Income Tax Act 2007 s. 10</td>
+<td>basic, higher, and additional rate bands</td>
+<td>bands</td>
+</tr>
+<tr class="odd">
+<td>05</td>
+<td><code>dividend_nil_rate</code></td>
+<td>Income Tax Act 2007 s. 13A</td>
+<td>band-conditional nil-rate amount</td>
+<td>bands</td>
+</tr>
+<tr class="even">
+<td>06</td>
+<td><code>personal_allowance_taper</code></td>
+<td>Income Tax Act 2007 s. 35</td>
+<td>£100,000 half-excess taper with round-up</td>
+<td>tapers</td>
+</tr>
+<tr class="odd">
+<td>07</td>
+<td><code>hicbc_phaseout</code></td>
+<td>ITEPA 2003 s. 681B</td>
+<td>child benefit charge: £200 per £100 over the threshold</td>
+<td>tapers</td>
+</tr>
+<tr class="even">
+<td>08</td>
+<td><code>pension_annual_allowance</code></td>
+<td>Finance Act 2004 s. 228</td>
+<td>annual allowance beside the s. 228ZA taper</td>
+<td>tapers</td>
+</tr>
+<tr class="odd">
+<td>09</td>
+<td><code>marriage_allowance_transfer</code></td>
+<td>Income Tax Act 2007 s. 55B</td>
+<td>transferable allowance: elections, both-party conditions</td>
+<td>structure</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td><code>income_tax_liability_steps</code></td>
+<td>Income Tax Act 2007 s. 23</td>
+<td>multi-step liability calculation; import-heavy</td>
+<td>structure</td>
+</tr>
+<tr class="odd">
+<td>11</td>
+<td><code>uc_award_calculation</code></td>
+<td>Welfare Reform Act 2012 s. 8</td>
+<td>universal credit: maximum amount minus reductions</td>
+<td>structure</td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td><code>child_benefit_entitlement</code></td>
+<td>SSCBA 1992 s. 141</td>
+<td>entitlement only — the rates live elsewhere</td>
+<td>grounding</td>
+</tr>
+<tr class="odd">
+<td>13</td>
+<td><code>finance_act_2026_charge</code></td>
+<td>Finance Act 2026 s. 1</td>
+<td>recency probe: the 2026–27 income tax charge</td>
+<td>grounding</td>
+</tr>
+<tr class="even">
+<td>14</td>
+<td><code>income_tax_main_rates</code></td>
+<td>Income Tax Act 2007 s. 6</td>
+<td>main rates on the worker oracle path</td>
+<td>oracle path</td>
+</tr>
+<tr class="odd">
+<td>15</td>
+<td><code>class_1_primary_nic</code></td>
+<td>SSCBA 1992 s. 8</td>
+<td>employee-side Class 1 contributions</td>
+<td>oracle path</td>
+</tr>
+<tr class="even">
+<td>16</td>
+<td><code>child_benefit_weekly_rates</code></td>
+<td>CB Regulations 2006 reg. 2</td>
+<td>the weekly rates case 12 must not invent</td>
+<td>oracle path</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Two cases exist to catch invented numbers. <code>child_benefit_entitlement</code> supplies entitlement conditions whose weekly amounts live in a different instrument — the 2006 regulations — so any rate literal in that encoding is an invention. <code>finance_act_2026_charge</code> encodes an act that postdates most of the roster’s training data, so the encoding must come from the supplied text rather than recall.</p>
+<h2 id="four-gates-and-a-fold" class="anchored">Four gates and a fold</h2>
+<p>A case passes for a model only when four deterministic checks pass: the encode returns an artifact, the artifact compiles in the Axiom rules engine, repository validation passes — including the companion tests — and the grounding scan finds zero numeric literals absent from the source text. The gate-pass count is the headline, and nothing else folds into it.</p>
+<p>Everything else reports alongside. A pinned reviewer model scores each encoding’s statutory fidelity — a single, noisy judge, and one whose own family competes on the board, so it cannot referee neutrally and its score sits beside the gates rather than inside them. On board v3 its mean scores span 7.8 to 8.3 of 10 across all six runners — a band too narrow to separate the leaders, which is why it never gets to try. The oracle column stays empty until the PolicyEngine UK runtime path is verified for eval cases. Latency and cost report as measured.</p>
+<p>The roster carries a control: <code>gpt-5.6-luna</code>, which prior internal measurement found weak at exactly this task. Across the three boards it scored 5, 5, 8 of 16 — at or near the bottom every time. A board that failed to separate the control from the leaders would indict the instrument, not the models.</p>
+<p>Runs fold into one board only when the suite name, the ordered case identities, the corpus release, and the normalized score-affecting toolchain identity all match. Runner sets may differ — a model added later folds cleanly without re-running incumbents — but a changed encoder refuses to fold: a new toolchain starts a new board by construction. Two of this paper’s findings turn on that refusal.</p>
+<h2 id="three-boards" class="anchored">Three boards</h2>
+<div id="7a46a3af" class="cell" data-execution_count="3">
+<div class="cell-output cell-output-display cell-output-markdown" data-execution_count="3">
+<table class="caption-top">
+<caption>The three boards. Costs are API-equivalents: codex-backend tokens priced at published July 2026 rates, Claude-backend costs as the CLI’s own recorded per-call figures. All runs drew on subscription-billed seats.</caption>
+<thead>
+<tr class="header">
+<th>board</th>
+<th>run</th>
+<th>encoder</th>
+<th>runners</th>
+<th>suite cost</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>v1</td>
+<td>2026-07-23</td>
+<td><code>0.2.1333</code></td>
+<td>4</td>
+<td>$15.11</td>
+</tr>
+<tr class="even">
+<td>v2</td>
+<td>2026-07-25</td>
+<td><code>0.2.1380</code></td>
+<td>6</td>
+<td>$40.25</td>
+</tr>
+<tr class="odd">
+<td>v3</td>
+<td>2026-07-26</td>
+<td><code>0.2.1382</code></td>
+<td>6</td>
+<td>$52.09</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Board v1 piloted the suite on four codex-backend models. Boards v2 and v3 ran the full six-model roster one day apart on successive encoder versions — v2 on the encoder that carried the timeout defect of <a href="#sec-timeout" class="quarto-xref">Section&nbsp;5.2</a>, v3 on the encoder that fixed it. v3 stands as the current board.</p>
+<div id="ff9e81bc" class="cell" data-execution_count="4">
+<div class="cell-output cell-output-display cell-output-markdown" data-execution_count="4">
+<table class="caption-top" style="width:100%;">
+<caption>Board v3 — encoder 0.2.1382, run 2026-07-26. Gate pass counts cases clearing all four gates. T counts cases that exhausted the recorded time budget; compile, ci, and grounded rates cover produced artifacts only. Reviewer and oracle columns are advisory and live in the board record.</caption>
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>runner</th>
+<th>model</th>
+<th>gate pass</th>
+<th>T</th>
+<th>artifacts</th>
+<th>compile</th>
+<th>ci</th>
+<th>grounded</th>
+<th>median</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>gpt-5.5</td>
+<td><code>gpt-5.5</code></td>
+<td><strong>15/16</strong> (93.8%)</td>
+<td>—</td>
+<td>16/16</td>
+<td>100.0%</td>
+<td>93.8%</td>
+<td>100.0%</td>
+<td>48s</td>
+</tr>
+<tr class="even">
+<td>sol</td>
+<td><code>gpt-5.6-sol</code></td>
+<td><strong>14/16</strong> (87.5%)</td>
+<td>—</td>
+<td>16/16</td>
+<td>100.0%</td>
+<td>87.5%</td>
+<td>100.0%</td>
+<td>45s</td>
+</tr>
+<tr class="odd">
+<td>fable</td>
+<td><code>claude-fable-5</code></td>
+<td><strong>12/16</strong> (75.0%)</td>
+<td>1</td>
+<td>15/16</td>
+<td>100.0%</td>
+<td>80.0%</td>
+<td>100.0%</td>
+<td>266s</td>
+</tr>
+<tr class="even">
+<td>terra</td>
+<td><code>gpt-5.6-terra</code></td>
+<td><strong>11/16</strong> (68.8%)</td>
+<td>—</td>
+<td>16/16</td>
+<td>100.0%</td>
+<td>68.8%</td>
+<td>100.0%</td>
+<td>34s</td>
+</tr>
+<tr class="odd">
+<td>luna</td>
+<td><code>gpt-5.6-luna</code></td>
+<td><strong>8/16</strong> (50.0%)</td>
+<td>—</td>
+<td>15/16</td>
+<td>93.3%</td>
+<td>53.3%</td>
+<td>100.0%</td>
+<td>50s</td>
+</tr>
+<tr class="even">
+<td>opus-5</td>
+<td><code>claude-opus-5</code></td>
+<td><strong>6/16</strong> (37.5%)</td>
+<td>—</td>
+<td>16/16</td>
+<td>87.5%</td>
+<td>37.5%</td>
+<td>100.0%</td>
+<td>47s</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="d19b11ef" class="cell" data-execution_count="5">
+<div class="cell-output cell-output-display cell-output-markdown" data-execution_count="5">
+<table class="caption-top" style="width:100%;">
+<caption>Board v3 per-case grid. P = gate pass, F = validation failure, T = timeout, E = no artifact.</caption>
+<colgroup>
+<col style="width: 41%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 9%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>case</th>
+<th>gpt-5.5</th>
+<th>sol</th>
+<th>fable</th>
+<th>terra</th>
+<th>luna</th>
+<th>opus-5</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>01 <code>vat_standard_rate</code></td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>F</td>
+</tr>
+<tr class="even">
+<td>02 <code>class_2_nic</code></td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>F</td>
+<td>P</td>
+</tr>
+<tr class="odd">
+<td>03 <code>class_1_secondary_nic</code></td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>E</td>
+<td>F</td>
+</tr>
+<tr class="even">
+<td>04 <code>income_tax_rate_bands</code></td>
+<td>P</td>
+<td>F</td>
+<td>P</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+</tr>
+<tr class="odd">
+<td>05 <code>dividend_nil_rate</code></td>
+<td>P</td>
+<td>F</td>
+<td>P</td>
+<td>F</td>
+<td>P</td>
+<td>F</td>
+</tr>
+<tr class="even">
+<td>06 <code>personal_allowance_taper</code></td>
+<td>P</td>
+<td>P</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+</tr>
+<tr class="odd">
+<td>07 <code>hicbc_phaseout</code></td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>F</td>
+<td>P</td>
+</tr>
+<tr class="even">
+<td>08 <code>pension_annual_allowance</code></td>
+<td>P</td>
+<td>P</td>
+<td>F</td>
+<td>F</td>
+<td>P</td>
+<td>P</td>
+</tr>
+<tr class="odd">
+<td>09 <code>marriage_allowance_transfer</code></td>
+<td>P</td>
+<td>P</td>
+<td>T</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+</tr>
+<tr class="even">
+<td>10 <code>income_tax_liability_steps</code></td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>F</td>
+<td>F</td>
+</tr>
+<tr class="odd">
+<td>11 <code>uc_award_calculation</code></td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+</tr>
+<tr class="even">
+<td>12 <code>child_benefit_entitlement</code></td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+</tr>
+<tr class="odd">
+<td>13 <code>finance_act_2026_charge</code></td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>F</td>
+</tr>
+<tr class="even">
+<td>14 <code>income_tax_main_rates</code></td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>F</td>
+</tr>
+<tr class="odd">
+<td>15 <code>class_1_primary_nic</code></td>
+<td>F</td>
+<td>P</td>
+<td>F</td>
+<td>P</td>
+<td>P</td>
+<td>F</td>
+</tr>
+<tr class="even">
+<td>16 <code>child_benefit_weekly_rates</code></td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>P</td>
+<td>F</td>
+<td>P</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="cell-fig-boards" class="cell" data-execution_count="6">
+<div class="cell-output cell-output-display">
+<div id="fig-boards" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig">
+<div aria-describedby="fig-boards-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="index_files/figure-html/fig-boards-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;1: Gate passes per model across the three boards. Panels order by board v3 rank; the y-axis runs 0–16 cases. The boards ran on different encoder versions, so each line connects runs of the suite, not draws from one instrument. The hollow marker is board v2’s fable row, which a 600-second harness ceiling truncated (Section&nbsp;5.2) — a floor, not a capability reading. fable and opus-5 joined the roster after v1."><img src="index_files/figure-html/fig-boards-output-1.png" width="651" height="342"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-boards-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Gate passes per model across the three boards. Panels order by board v3 rank; the y-axis runs 0–16 cases. The boards ran on different encoder versions, so each line connects runs of the suite, not draws from one instrument. The hollow marker is board v2’s fable row, which a 600-second harness ceiling truncated (<a href="#sec-timeout" class="quarto-xref">Section&nbsp;5.2</a>) — a floor, not a capability reading. fable and opus-5 joined the roster after v1.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Three readings of the current board survive the variance analysis that follows; the rest wait for board v4.</p>
+<p>First, the extremes separate. <code>gpt-5.5</code> and <code>gpt-5.6-sol</code> clear 15/16 and 14/16 while the control and <code>claude-opus-5</code> sit at 8/16 and 6/16 — gaps far wider than anything the run-to-run movement produced.</p>
+<p>Second, no model invented a number. Across the 250 artifacts produced over all three boards, the grounding scan found 0 with an ungrounded numeric — the two trap cases included. Frontier models do not fail this suite by fabricating rates; they fail it by writing encodings whose tests prove them wrong. The verification burden this implies sits in test quality, not fact-checking literals.</p>
+<p>Third, speed and cost split by family, not by score. The codex runners’ median case ran 34–50 seconds on v3; fable’s ran 266 seconds and emitted 458,159 output tokens, putting its suite cost at $33.02 against $5.66 for sol — 5.8× the cost for a lower score on this board.</p>
+<div id="f20fdcb9" class="cell" data-execution_count="7">
+<div class="cell-output cell-output-display cell-output-markdown" data-execution_count="7">
+<table class="caption-top">
+<caption>Board v3 cost annex, API-equivalent. The Claude CLI reports its own per-call cost, recorded verbatim; recomputing it from a rate table would mean inventing a rate for claude-opus-5, which has no published price in the reference the rig bundles. The Claude CLI also reports near-zero input tokens in this mode; its recorded cost already prices the full exchange.</caption>
+<colgroup>
+<col style="width: 11%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 11%">
+<col style="width: 13%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>runner</th>
+<th>input tok</th>
+<th>output tok</th>
+<th>cache read</th>
+<th>cost</th>
+<th>per pass</th>
+<th>basis</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>luna</td>
+<td>826,676</td>
+<td>43,734</td>
+<td>310,528</td>
+<td>$1.12</td>
+<td>$0.14</td>
+<td>rate table</td>
+</tr>
+<tr class="even">
+<td>terra</td>
+<td>846,099</td>
+<td>31,240</td>
+<td>308,992</td>
+<td>$2.66</td>
+<td>$0.24</td>
+<td>rate table</td>
+</tr>
+<tr class="odd">
+<td>opus-5</td>
+<td>36</td>
+<td>152,826</td>
+<td>774,613</td>
+<td>$3.85</td>
+<td>$0.64</td>
+<td>CLI-reported</td>
+</tr>
+<tr class="even">
+<td>sol</td>
+<td>897,438</td>
+<td>33,026</td>
+<td>356,608</td>
+<td>$5.66</td>
+<td>$0.40</td>
+<td>rate table</td>
+</tr>
+<tr class="odd">
+<td>gpt-5.5</td>
+<td>898,057</td>
+<td>37,576</td>
+<td>344,576</td>
+<td>$5.79</td>
+<td>$0.39</td>
+<td>rate table</td>
+</tr>
+<tr class="even">
+<td>fable</td>
+<td>18</td>
+<td>458,159</td>
+<td>462,774</td>
+<td>$33.02</td>
+<td>$2.75</td>
+<td>CLI-reported</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h2 id="what-it-takes-to-measure-this-honestly" class="anchored">What it takes to measure this honestly</h2>
+<h3 id="sec-variance" class="anchored">Scores bind to the toolchain</h3>
+<p>Between board v2 (encoder 0.2.1380, 2026-07-25) and board v3 (0.2.1382, 2026-07-26), gate-pass moved gpt-5.5 +4, opus-5 +4, luna +3, fable +3, terra 0, sol -1 — 5 of six models moved, net +13. Movement that skewed positive rules out symmetric run-to-run noise as the whole story. Two causes confound, and two runs cannot separate them: model nondeterminism, and real toolchain change — the validator gained typed numeric occurrences and a locale profile between the boards, alongside the timeout fix. The fold’s refusal to combine boards across encoder versions stopped looking like bookkeeping here and started doing its job.</p>
+<p>Four consequences govern how to read any single board:</p>
+<ul>
+<li><strong>A board is one sample.</strong> gpt-5.5 leads v3 at 15/16 with sol at 14/16 — one case apart, from a model that moved four cases between boards. The order of ranks one and two is not a finding.</li>
+<li><strong>The extremes are findings.</strong> The gaps separating the leaders from the control and from opus-5 exceed every delta the rerun produced.</li>
+<li><strong>A score is citable only with its encoder version.</strong> This paper writes encoder versions next to every number for that reason, and the fold refuses to blend versions mechanically.</li>
+<li><strong>The one ranking result that reproduced: terra below sol.</strong> terra scored 9, 11, 11 across the boards — the steadiest line any model produced — while sol scored 14, 15, 14. Two six-model boards on different toolchains and the four-model pilot agree. The July bake-off this benchmark formalizes had read the two as interchangeable on a smaller, easier case set; the finding that survives every board is that the larger, colder suite separates them.</li>
+</ul>
+<h3 id="sec-timeout" class="anchored">A timeout that graded slowness as failure</h3>
+<p>Board v2’s harness carried a hardcoded 600-second ceiling on the Claude encoder path. The codex path exposed configurable timeouts; the Claude path hardcoded one constant that nobody had reason to read. fable’s median case ran 211 seconds on that board — roughly four to seven times the codex runners’ 29–57 — so the ceiling truncated exactly one model’s tail. The harness killed 4 of its sixteen cases with no artifact produced, and the fold scored each absent artifact as a compile and grounding miss. Among the 12 cases that completed, fable passed 9. The board record flagged the row as a floor the day it posted, and this paper does not cite it as a capability number anywhere.</p>
+<p>The fix replaced the constant with a configurable, recorded budget — uniform 1,800 seconds per encoder invocation and 3,600 per case on v3 — and made timeouts visible: a case that exhausts its budget records <code>timed_out</code>, renders as T on the grid, and drops out of the artifact denominators instead of masquerading as a bad encoding. Execution identity now carries the timeout policy, so runs under different ceilings refuse to fold, the same way different encoders do.</p>
+<p>Board v3 exercised the whole path on real artifacts. All six runners finalized with no operator salvage — on v2, two of six needed manual recovery after compile-failure text embedded ephemeral staging paths, a reproducibility defect the same fix normalized — and the board’s one timeout, fable’s marriage_allowance_transfer at 3,600 seconds of case budget, reads as exactly what it is.</p>
+<h3 id="sec-effort" class="anchored">The effort setting that did nothing</h3>
+<p>Every board above ran with a harness line that appeared to pin codex reasoning effort: <code>-c reasoning_effort="low"</code> on every codex invocation. <code>reasoning_effort</code> is not a recognized Codex configuration field — the real key is <code>model_reasoning_effort</code> — and codex invoked without <code>--strict-config</code> accepts unknown keys silently. The line never did anything. Every codex runner on every board ran at its receiver default, and the Claude path passes no effort flag at all, so those runners did too. A note posted to the tracking issue first reported the runs as pinned to low effort; receiver verification the same day corrected the record to inert. As a defect class this is worse than a wrong setting: the source reads as though the comparison is controlled.</p>
+<p>A five-sample-per-level probe established what each knob does. On codex, the recognized key moves real resources: gpt-5.6-terra’s median reasoning tokens rose from 145 at low to 2756 at xhigh, median wall time from 20s to 53s, and ultra ran slowest (106s median) with the widest spread (401–6907 reasoning tokens). On the Claude CLI, <code>--effort</code> changed nothing measurable in print mode: cost, wall time, and answers held flat from low through max, and claude-opus-5 returned the same answer at every level — consistent with the Claude 5 family regulating its own reasoning depth.</p>
+<p>Cross-family effort matching therefore has no honest implementation on these receivers. The design that survives is asymmetric and says so: sweep the codex arms at declared, receiver-verified levels; run the Claude arms at their adaptive default and label them that way. Board v4 records requested and effective effort in execution identity, so effort-mismatched runs refuse to fold — the same mechanism that already refuses mixed toolchains.</p>
+<h3 id="sec-parity" class="anchored">Three backends, three exams</h3>
+<p>A read-only audit of the harness, posted in full to the tracking issue, found a deeper asymmetry: the three encoder paths did not administer the same exam. The codex path ran in a workspace and could shell-read the full context files. The Claude path ran prompt-only, with no tools. The OpenAI API path — not on the standing roster — truncated each context file to a 6,000-character prefix silently, and capped output at 16,384 tokens including reasoning, with partial artifacts eligible for scoring. CLI versions went unrecorded, and version drift changes which flags a CLI even accepts.</p>
+<p>None of this shows on a leaderboard cell, and all of it shapes scores. The v1–v3 cross-family readings above therefore compare models on different evidence, and this paper flags them as weaker than the within-family readings wherever they appear.</p>
+<p>The parity encoder closes the gap by construction rather than by calibration: every backend receives identical prompt bytes with all context inlined; the codex workspace starts empty; context overflow fails loudly as an infrastructure error instead of truncating silently; the harness rejects partial or truncated artifacts instead of scoring them; undeclared file access terminates the case; and CLI versions preflight and record per row.</p>
+<h3 id="sec-case04" class="anchored">Case 04, flagged and retracted</h3>
+<p>All 10 model-runs across boards v1 and v2 failed <code>income_tax_rate_bands</code>, and the v2 record flagged it as a suspected suite defect: at zero for ten, a broken fixture explained the data at least as well as a hard provision. Board v3 answered — gpt-5.5 and fable both passed it — and we retracted the flag on the tracking issue the day the board posted. Ten consecutive failures had measured difficulty, not validity. The operating rule the episode set: unanimous failure justifies reading the artifacts, never disqualifying the case from a summary table.</p>
+<h3 id="sec-integrity" class="anchored">Integrity notes</h3>
+<p>The archived boards carry two integrity notes. opus-5’s first v2 run returned 1/16 with nine cases erroring in about a second each: its encoder and its own reviewer drew on one subscription account, and the account hit its session limit. We discarded that run as a measurement failure, split the accounts, and re-ran clean — zero quota errors, case durations of 10 to 465 seconds, and the executed model verified from traces; only the clean row ever published. luna’s v2 advisory-review column covered 8 of 16 after the shared reviewer account hit its own limit mid-run; the deterministic gates read only compile, tests, and grounding, so its gate column stood. Both events taught the same operating rule: an encoder never shares an account with its own judge.</p>
+<h2 id="board-v4-pre-registered" class="anchored">Board v4, pre-registered</h2>
+<p>Board v4 runs when the parity encoder merges, and its design is fixed before any result exists:</p>
+<ul>
+<li><strong>Same sixteen cases, same corpus release, new encoder</strong> — a new board by construction, folded by the same contract.</li>
+<li><strong>One exam.</strong> Identical prompt bytes on every backend, context inlined, empty workspaces, overflow loud, partials rejected, undeclared access terminal, CLI versions recorded per row (<a href="#sec-parity" class="quarto-xref">Section&nbsp;5.4</a>).</li>
+<li><strong>Effort as a recorded axis.</strong> Codex arms swept at declared, receiver-verified levels; Claude arms at their adaptive default, disclosed as such (<a href="#sec-effort" class="quarto-xref">Section&nbsp;5.3</a>). Effort-mismatched runs refuse to fold.</li>
+<li><strong>Repeated runs per arm on the pinned encoder, reported as mean and spread.</strong> Single draws retire (<a href="#sec-variance" class="quarto-xref">Section&nbsp;5.1</a>).</li>
+</ul>
+<p>v4 is the first board eligible to support a cross-family capability comparison. This paper refreezes with it: new snapshot, re-derived numbers, same standing rule that no number appears here that the frozen artifacts cannot reproduce.</p>
+<h2 id="limitations" class="anchored">Limitations</h2>
+<p>Sixteen cases sample one jurisdiction on one corpus release; the suite measures UK statutory encoding on this release, not encoding in general. The gates check that an encoding compiles, passes its companion tests, and grounds its numerics — they do not check full statutory fidelity, and the oracle column that would cross-check computed results against PolicyEngine UK stays empty until that runtime path is verified for eval cases. Each (model, board) cell is a single run, so within-toolchain variance stays unmeasured until v4’s repeated runs. Costs are API-equivalents priced from recorded tokens for the codex runners and CLI-reported figures for the Claude runners. The runners are CLI products, not bare models: each brings its own system prompt, tool behavior, and retry policy, and boards v1–v3 did not equalize them (<a href="#sec-parity" class="quarto-xref">Section&nbsp;5.4</a>).</p>
+<h2 id="reproducibility" class="anchored">Reproducibility</h2>
+<p>Every number in this paper derives in code from the frozen run artifacts — sixteen signed <code>results.json</code> files across the three boards, hashed file-by-file in the snapshot manifest — through a results module that re-implements the deterministic pieces of the <code>eval-board</code> fold. The module verifies its derived headlines against the board records posted to the tracking issue and refuses to render the manuscript on any mismatch; this render passed that check (verified against published records: 16 gate counts, medians, v3 artifacts/timeouts/costs).</p>
+<p><a href="https://github.com/TheAxiomFoundation/axiom-encode">axiom-encode</a> holds the suite manifest, the harness, and the fold; the boards post to tracking issue <a href="https://github.com/TheAxiomFoundation/axiom-encode/issues/1189">#1189</a>, and <a href="https://github.com/TheAxiomFoundation/axiom-encode/pull/1304">PR #1304</a> carries the parity encoder. The current board, the suite, and this paper live at <a href="https://encodebench.org">encodebench.org</a>; the paper’s source, snapshot, and derivation module live in the <a href="https://github.com/TheAxiomFoundation/encodebench.org">site repository</a> under <code>paper/</code>.</p>
+<h2 class="unnumbered anchored" id="references">References</h2>
+<div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-chen2021humaneval" class="csl-entry" role="listitem">
+<span class="nocase">Chen, Mark, Jerry Tworek, Heewoo Jun, et al.</span> 2021. <em>Evaluating Large Language Models Trained on Code</em>. <a href="https://arxiv.org/abs/2107.03374">https://arxiv.org/abs/2107.03374</a>.
+</div>
+<div id="ref-policybench2026" class="csl-entry" role="listitem">
+Ghenis, Max. 2026. <em>PolicyBench: Benchmarking No-Tool Tax-and-Benefit Estimation in Frontier Language Models</em>. <a href="https://policybench.org/paper">https://policybench.org/paper</a>.
+</div>
+<div id="ref-guha2023legalbench" class="csl-entry" role="listitem">
+<span class="nocase">Guha, Neel, Julian Nyarko, Daniel E. Ho, Christopher Ré, Adam Chilton, et al.</span> 2023. <span>“<span>LegalBench</span>: A Collaboratively Built Benchmark for Measuring Legal Reasoning in Large Language Models.”</span> <em>Advances in Neural Information Processing Systems, Datasets and Benchmarks Track</em>. <a href="https://arxiv.org/abs/2308.11462">https://arxiv.org/abs/2308.11462</a>.
+</div>
+<div id="ref-jimenez2024swebench" class="csl-entry" role="listitem">
+Jimenez, Carlos E., John Yang, Alexander Wettig, et al. 2024. <span>“<span>SWE</span>-Bench: Can Language Models Resolve Real-World <span>GitHub</span> Issues?”</span> <em>International Conference on Learning Representations</em>. <a href="https://arxiv.org/abs/2310.06770">https://arxiv.org/abs/2310.06770</a>.
+</div>
+<div id="ref-merigoux2021catala" class="csl-entry" role="listitem">
+Mérigoux, Denis, Nicolas Chataing, and Jonathan Protzenko. 2021. <span>“Catala: A Programming Language for the Law.”</span> <em>Proceedings of the ACM on Programming Languages</em> 5 (ICFP). <a href="https://arxiv.org/abs/2103.03198">https://arxiv.org/abs/2103.03198</a>.
+</div>
+<div id="ref-mohun2020cracking" class="csl-entry" role="listitem">
+Mohun, James, and Alex Roberts. 2020. <em>Cracking the Code: Rulemaking for Humans and Machines</em>. OECD Working Papers on Public Governance No. 42. OECD Observatory of Public Sector Innovation.
+</div>
+</div>
+
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+    tabsets.forEach(function(tabset) {
+      const tabby = new Tabby('#' + tabset.id);
+    });
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'light-border',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>

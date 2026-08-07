@@ -44,6 +44,9 @@ function Nav() {
         <a className="link-quiet" href="#methodology">
           methodology
         </a>
+        <a className="link-quiet" href="/paper">
+          paper
+        </a>
         <a
           className="link-quiet"
           href={GITHUB_ENCODE}
@@ -177,7 +180,12 @@ function Board() {
           same exam: the Codex runners could read workspace files while the
           Anthropic runners ran prompt-only. Cross-family rows here should be
           read loosely. The next run fixes both — explicit recorded effort and
-          an identical prompt-only exam for every backend.
+          an identical prompt-only exam for every backend. The{" "}
+          <a className="link-accent" href="/paper">
+            paper
+          </a>{" "}
+          carries the full account, every number derived from the signed run
+          artifacts.
         </p>
       </div>
     </section>
@@ -380,7 +388,7 @@ function SiteFooter() {
     <footer className="border-t border-[var(--color-rule)] py-12">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-6 px-6">
         <a
-          href="https://axiom-foundation.org"
+          href="https://axiom.org"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3"

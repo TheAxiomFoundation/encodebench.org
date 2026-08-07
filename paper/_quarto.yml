@@ -1,0 +1,30 @@
+project:
+  type: manuscript
+  output-dir: out
+
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    theme: none
+    notebook-links: false
+    css:
+      - encodebench-tokens.css
+      - encodebench-paper.css
+  pdf:
+    toc: true
+    number-sections: true
+    notebook-links: false
+    header-includes:
+      - \usepackage{tgpagella}
+      - \usepackage[scaled=0.94]{helvet}
+      - \usepackage[scaled=0.9]{inconsolata}
+      - \setlength{\tabcolsep}{4pt}
+
+execute:
+  echo: false
+  warning: false
+  message: false
+
+manuscript:
+  article: index.qmd
