@@ -1,18 +1,24 @@
 """Freeze the EncodeBench manuscript snapshot from the run rig.
 
-Copies each board's signed ``results.json`` files (plus the effort-probe
-record) into ``paper/snapshot/<SNAPSHOT_DIR_NAME>/`` as deterministic gzip
-files and writes ``manifest.json`` with a sha256 for every frozen artifact —
-both the stored bytes and the decompressed JSON. Re-running on the same
-sources produces byte-identical files and the same hashes.
+Copies each board's recorded ``results.json`` files, the excluded runs the
+integrity notes describe, the per-case workspace context manifests, the
+suite manifest at the v3 encoder commit, and the effort-probe record into
+``paper/snapshot/<SNAPSHOT_DIR_NAME>/``, and writes ``manifest.json`` with
+a sha256 for every frozen artifact. Results files store as deterministic
+gzip (both the stored bytes and the decompressed JSON are hashed); the
+plain-text artifacts store as-is. Re-running on the same sources produces
+byte-identical files and the same hashes.
 
-Every quantitative claim in ``paper/index.qmd`` reads from this snapshot
-through ``paper/paper_results.py``; nothing in the manuscript is hand-typed
-from a summary. The standing rule: the paper refreezes with every new board.
+Board statistics, probe values, and integrity-note numbers in
+``paper/index.qmd`` derive from this snapshot through
+``paper/paper_results.py``. The standing rule: the paper refreezes with
+every new board.
 
 Sources default to the run rig at
-``~/TheAxiomFoundation/ops/model-capability-eval/rig`` and can be pointed
-elsewhere with ``ENCODEBENCH_RIG_DIR``. Run from the repo root::
+``~/TheAxiomFoundation/ops/model-capability-eval/rig`` (override with
+``ENCODEBENCH_RIG_DIR``); the suite manifest extracts from a local
+axiom-encode clone (override with ``ENCODEBENCH_AXIOM_ENCODE_REPO``). Run
+from the repo root::
 
     python3 paper/scripts/freeze_snapshot.py
 """
@@ -54,12 +60,15 @@ BOARDS: dict[str, tuple[str, tuple[str, ...]]] = {
     ),
 }
 
-# Runs the boards refused: frozen so the paper's integrity notes derive from
-# artifacts rather than narrative. Path is relative to the rig; the manifest
-# marks each entry discarded with its reason.
+# Runs that never published: frozen so the paper's integrity notes derive
+# from artifacts rather than narrative. Paths are relative to the rig; the
+# manifest marks each entry with its exclusion reason. ``format`` selects
+# the parser: a finalized ``results.json`` payload, or the per-case
+# ``suite-results.jsonl`` rows of a run the finalizer refused.
 DISCARDED_RUNS = {
     "v2-opus5-quota-poisoned": {
         "path": "runs.v2-opus5-quota-poisoned/results.json",
+        "format": "results-json",
         "reason": (
             "opus-5's first v2 attempt: its encoder and its reviewer drew on "
             "one subscription account, which hit its session limit mid-run. "
@@ -67,13 +76,39 @@ DISCARDED_RUNS = {
             "accounts; the clean re-run is boards/v2/opus-5."
         ),
     },
+    "v1-fable-unfinalized": {
+        "path": "runs.v1-3fd8b063/fable/suite-results.jsonl",
+        "format": "suite-results-jsonl",
+        "reason": (
+            "fable's completed 2026-07-24 run on the v1 encoder: all 16 "
+            "cases ran, but the finalizer refused the run — the "
+            "nondeterministic-reviewer revalidation defect PR #1280 later "
+            "fixed — so no results.json exists and it could never fold "
+            "into board v1, whose record had promised it would. Four "
+            "earlier fable attempts died on harness infrastructure (a "
+            "malformed MCP config that killed every Claude call, then CLI "
+            "auth) and produced no substantive rows."
+        ),
+    },
 }
+
+# Per-case workspace context manifests, one exemplar per case (identical
+# across runners and boards per case; every board row binds to one by
+# ``context_manifest_sha256``). Frozen so workspace composition — zero
+# context files on cold cases, the merged target module riding along on
+# repo-augmented ones — derives from the snapshot.
+CONTEXT_EXEMPLAR_RUNNER = "sol"
 
 # The suite manifest exactly as the v3 encoder commit pinned it, frozen from
 # git so the paper's suite table can be audited against the same text the
 # boards ran.
 SUITE_YAML_COMMIT = "c69a51a4"
-AXIOM_ENCODE_REPO = Path.home() / "TheAxiomFoundation" / "axiom-encode"
+AXIOM_ENCODE_REPO = Path(
+    os.environ.get(
+        "ENCODEBENCH_AXIOM_ENCODE_REPO",
+        Path.home() / "TheAxiomFoundation" / "axiom-encode",
+    )
+)
 
 BOARD_RECORD_URLS = {
     "v1": "https://github.com/TheAxiomFoundation/axiom-encode/issues/1189#issuecomment-5056359224",
@@ -163,17 +198,51 @@ def main() -> None:
     for name, spec in DISCARDED_RUNS.items():
         raw = (RIG_DIR / spec["path"]).read_bytes()
         stored = deterministic_gzip(raw)
-        dest_rel = f"discarded/{name}.results.json.gz"
+        suffix = (
+            "results.json.gz"
+            if spec["format"] == "results-json"
+            else "suite-results.jsonl.gz"
+        )
+        dest_rel = f"discarded/{name}.{suffix}"
         dest = SNAPSHOT_DIR / dest_rel
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_bytes(stored)
         discarded_manifest[name] = {
             "file": dest_rel,
+            "format": spec["format"],
             "sha256_gz": sha256_bytes(stored),
             "sha256_json": sha256_bytes(raw),
             "discarded": True,
             "reason": spec["reason"],
         }
+
+    context_dir = RIG_DIR / BOARDS["v3"][0] / CONTEXT_EXEMPLAR_RUNNER
+    context_manifest_entries: list[dict] = []
+    for case_dir in sorted(p for p in context_dir.iterdir() if p.is_dir()):
+        if not case_dir.name[:2].isdigit():
+            continue
+        matches = sorted(
+            case_dir.glob("_eval_workspaces/*/*/workspace/context-manifest.json")
+        )
+        if not matches:
+            raise SystemExit(f"No context manifest under {case_dir}")
+        raw = matches[0].read_bytes()
+        dest_rel = f"context-manifests/{case_dir.name}.json"
+        dest = SNAPSHOT_DIR / dest_rel
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(raw)
+        context_manifest_entries.append(
+            {
+                "case_index": int(case_dir.name[:2]),
+                "case_dir": case_dir.name,
+                "file": dest_rel,
+                "sha256": sha256_bytes(raw),
+            }
+        )
+    if len(context_manifest_entries) != 16:
+        raise SystemExit(
+            f"Expected 16 context manifests, froze {len(context_manifest_entries)}"
+        )
 
     suite_yaml = subprocess.run(
         [
@@ -202,6 +271,15 @@ def main() -> None:
         "tracking_issue": "https://github.com/TheAxiomFoundation/axiom-encode/issues/1189",
         "boards": boards_manifest,
         "discarded_runs": discarded_manifest,
+        "context_manifests": {
+            "note": (
+                "One exemplar per case, from the v3 "
+                f"{CONTEXT_EXEMPLAR_RUNNER} run; every board row binds to "
+                "its case's exemplar by context_manifest_sha256, which "
+                "paper_results asserts at load."
+            ),
+            "entries": context_manifest_entries,
+        },
         "effort_probe": {
             "file": EFFORT_PROBE_FILE,
             "sha256": sha256_bytes(probe_raw),

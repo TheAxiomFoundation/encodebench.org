@@ -207,10 +207,120 @@
       "source_runs_dir": "/Users/maxghenis/TheAxiomFoundation/ops/model-capability-eval/rig/runs.v3-c69a51a4"
     }
   },
+  "context_manifests": {
+    "entries": [
+      {
+        "case_dir": "01-vat_standard_rate",
+        "case_index": 1,
+        "file": "context-manifests/01-vat_standard_rate.json",
+        "sha256": "aca199cae8bdb9baa21d162955ba155ef2606a9585c2ace255cddb496c7dda49"
+      },
+      {
+        "case_dir": "02-class_2_nic",
+        "case_index": 2,
+        "file": "context-manifests/02-class_2_nic.json",
+        "sha256": "c8aea0d1842aab9828ab161562636f1bd453a96196e96b7c0133a3fd759e5f20"
+      },
+      {
+        "case_dir": "03-class_1_secondary_nic",
+        "case_index": 3,
+        "file": "context-manifests/03-class_1_secondary_nic.json",
+        "sha256": "0efd365bda2046935585bd80855aa64b3514a054ef87f2c158f12ae53154108d"
+      },
+      {
+        "case_dir": "04-income_tax_rate_bands",
+        "case_index": 4,
+        "file": "context-manifests/04-income_tax_rate_bands.json",
+        "sha256": "d87a99f4c4cf1f76a03ed373c3af13a5a7f1034af1065d3f750031335356c859"
+      },
+      {
+        "case_dir": "05-dividend_nil_rate",
+        "case_index": 5,
+        "file": "context-manifests/05-dividend_nil_rate.json",
+        "sha256": "92e95dfacf83842829803c69b6e8865a13837bb99d700d250aa69f312e00f911"
+      },
+      {
+        "case_dir": "06-personal_allowance_taper",
+        "case_index": 6,
+        "file": "context-manifests/06-personal_allowance_taper.json",
+        "sha256": "a457101f8102125331228d40f029ae8f6d3cbfa64976897c0bef06cc809c5094"
+      },
+      {
+        "case_dir": "07-hicbc_phaseout",
+        "case_index": 7,
+        "file": "context-manifests/07-hicbc_phaseout.json",
+        "sha256": "5cfcac4c27b7ce352fa21d9f1393031fa98b05ebae7d0234ee8033cd31f16300"
+      },
+      {
+        "case_dir": "08-pension_annual_allowance",
+        "case_index": 8,
+        "file": "context-manifests/08-pension_annual_allowance.json",
+        "sha256": "9edabe3356c04e29f7c9e5a7908dac2cd20ca0985b9ebbd998e18a2858d703b1"
+      },
+      {
+        "case_dir": "09-marriage_allowance_transfer",
+        "case_index": 9,
+        "file": "context-manifests/09-marriage_allowance_transfer.json",
+        "sha256": "c6ab950cde4d5523b8ac527de2c58be436b1ef4dceaacea84b33f68252dead23"
+      },
+      {
+        "case_dir": "10-income_tax_liability_steps",
+        "case_index": 10,
+        "file": "context-manifests/10-income_tax_liability_steps.json",
+        "sha256": "5be39440d605750b393607ccc4fcd2666028a87f94ead86ded6938c6a43632d0"
+      },
+      {
+        "case_dir": "11-uc_award_calculation",
+        "case_index": 11,
+        "file": "context-manifests/11-uc_award_calculation.json",
+        "sha256": "58a381ade410194b2dfd356e61a60edc6df8a977ed70fc0511bced6dbc6ceec6"
+      },
+      {
+        "case_dir": "12-child_benefit_entitlement",
+        "case_index": 12,
+        "file": "context-manifests/12-child_benefit_entitlement.json",
+        "sha256": "b0d255285feb96c4969e4ecebb910a21248306c3368370ae9981664600ce5c13"
+      },
+      {
+        "case_dir": "13-finance_act_2026_charge",
+        "case_index": 13,
+        "file": "context-manifests/13-finance_act_2026_charge.json",
+        "sha256": "9f3890df592c4f6f8b0437c74f6c5b5ae4d1a788b2e92bc13cbbb98b83eff84f"
+      },
+      {
+        "case_dir": "14-income_tax_main_rates",
+        "case_index": 14,
+        "file": "context-manifests/14-income_tax_main_rates.json",
+        "sha256": "84bbb6cd5ef9417fde59fb0661f45a7591760da2db6e69e1e296f30bb97340e5"
+      },
+      {
+        "case_dir": "15-class_1_primary_nic",
+        "case_index": 15,
+        "file": "context-manifests/15-class_1_primary_nic.json",
+        "sha256": "93a2e72ffe1e7b4bb2b92867836235ca6fb2d0a708988a2c16f9a4d8ce0a0431"
+      },
+      {
+        "case_dir": "16-child_benefit_weekly_rates",
+        "case_index": 16,
+        "file": "context-manifests/16-child_benefit_weekly_rates.json",
+        "sha256": "f453f8cfedcaed43847c73f673f704fcb61ef72581d1087ad499df4ddf57457c"
+      }
+    ],
+    "note": "One exemplar per case, from the v3 sol run; every board row binds to its case's exemplar by context_manifest_sha256, which paper_results asserts at load."
+  },
   "discarded_runs": {
+    "v1-fable-unfinalized": {
+      "discarded": true,
+      "file": "discarded/v1-fable-unfinalized.suite-results.jsonl.gz",
+      "format": "suite-results-jsonl",
+      "reason": "fable's completed 2026-07-24 run on the v1 encoder: all 16 cases ran, but the finalizer refused the run \u2014 the nondeterministic-reviewer revalidation defect PR #1280 later fixed \u2014 so no results.json exists and it could never fold into board v1, whose record had promised it would. Four earlier fable attempts died on harness infrastructure (a malformed MCP config that killed every Claude call, then CLI auth) and produced no substantive rows.",
+      "sha256_gz": "5676c55758e98fe03f2eb37775d97491a847d200c0bfd8e55c60912f2da75c1b",
+      "sha256_json": "3999dfbd91a61b25b1fbfbcfe562503c7147c8d5a61bfefabccb77049ed53a18"
+    },
     "v2-opus5-quota-poisoned": {
       "discarded": true,
       "file": "discarded/v2-opus5-quota-poisoned.results.json.gz",
+      "format": "results-json",
       "reason": "opus-5's first v2 attempt: its encoder and its reviewer drew on one subscription account, which hit its session limit mid-run. Discarded as a measurement failure and re-run on split accounts; the clean re-run is boards/v2/opus-5.",
       "sha256_gz": "bb852c5e4d43408c3cd04e23c1245e48faae697f5ad4bcedcc062d83d9174a41",
       "sha256_json": "05342962eae9f95bcdefd629a69e3f0e09a396340894518d098dd55037194513"

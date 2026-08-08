@@ -11,8 +11,10 @@ abstract: |
   ship with tests. Sixteen UK provisions, resolved from a signed corpus
   release, supply the tasks; each encoding grades on deterministic gates —
   an artifact exists, it compiles, it passes the repository's validation
-  including its companion tests, and it contains no number the source text
-  lacks. Three boards to date cover six models. This paper reports the
+  including the encoding's own companion tests, and it carries no rate,
+  amount, or threshold the source text lacks. A gate pass certifies a
+  mergeable, self-consistent, grounded draft, not legal correctness. Three
+  boards to date cover six models. This paper reports the
   boards and, with equal weight, what running them taught about
   measurement: scores moved with the toolchain that produced them, so a
   score is citable only against its encoder version; a hardcoded timeout
@@ -21,9 +23,8 @@ abstract: |
   to control the comparison did nothing at all. The first two surfaced
   through the same deterministic machinery that grades the models; the
   others took a read-only audit and a receiver probe, both posted in the
-  open. Board v4, pre-registered here, runs on a parity encoder that
-  closes these gaps and reports means with spread in place of single
-  draws.
+  open. Board v4, pre-registered here, runs on a parity encoder built to
+  close these gaps, reporting means with spread in place of single draws.
 format:
   html:
     toc: true
@@ -107,6 +108,10 @@ claude_other_hi = max(
 )
 claude_low_all = r.probe_level("claude", "low")["all"]
 
+coverages = {s.runner: r.coverage_pct(s.runner) for s in ranked3}
+cov_others_lo = min(v for k, v in coverages.items() if k != "opus-5")
+cov_others_hi = max(v for k, v in coverages.items() if k != "opus-5")
+
 v2f = r.v2_fable
 v3f_timeout = r.v3_fable_timeout
 case04 = r.case04
@@ -156,68 +161,79 @@ inside a production pipeline, and how would you know?
 
 EncodeBench makes the question measurable. It formalizes the informal
 bake-off the Axiom Foundation ran in July 2026 to route its own encoder,
-replacing a scratchpad comparison with a pinned suite, a deterministic fold
-— the aggregation step that combines runs into a board, the published
-comparison — and public records. Code benchmarks grade models on tests
-[@chen2021humaneval; @jimenez2024swebench], legal benchmarks grade them on
-reasoning tasks [@guha2023legalbench], and a line of work sits at the seam:
-one-shot statute-to-code translation graded by similarity or human
-comparison [@janatian2023text; @lorenzo2025translating], targeting
-domain-specific languages for law [@merigoux2021catala] alongside deployed
-rules-as-code engines [@openfisca] and government programs
-[@mohun2020cracking]. EncodeBench differs in what it grades and how:
-agentic CLI encoders rather than one-shot generation, production merge
-gates rather than similarity scores, and a signed corpus release rather
-than pasted statute text. Its sister benchmark PolicyBench
-[@policybench2026] asks whether a model can compute the law; EncodeBench
-asks whether it can write it.
+replacing a scratchpad comparison with a pinned suite, a deterministic
+fold, and public records; the fold aggregates runs into a board — the
+published comparison. Code benchmarks grade models on tests
+[@chen2021humaneval; @jimenez2024swebench]; legal benchmarks grade
+reasoning over statutes [@guha2023legalbench; @holzenberger2020sara];
+statute-to-structure and statute-to-code translation grades one-shot
+generation by similarity or human comparison [@janatian2023text;
+@lorenzo2025translating]; and the target formats exist as domain-specific
+languages for law [@merigoux2021catala], deployed rules-as-code engines
+[@openfisca], and government rules-as-code programs [@mohun2020cracking].
+EncodeBench differs in what it grades and how: CLI encoder products graded
+by production merge gates rather than similarity-scored one-shot
+generation — a contrast boards v1–v3 realized fully only on the codex
+path (@sec-parity) — on a signed corpus release rather than pasted statute
+text. Its sister benchmark PolicyBench [@policybench2026] asks whether a
+model can compute the law; EncodeBench asks whether it can write it.
 
 Three boards in, the results worth the most attention concern the
 measurement itself. Between two full-roster runs a day apart, most of the
 roster moved, and the movement skewed positive — so a single board reads as
-one sample, not a ranking. A read-only audit found the three encoder
-backends administering different exams. The setting that appeared to pin
-reasoning effort did nothing on any backend. Two of these surfaced through
-the same deterministic machinery that grades the models — the fold's
-refusal to blend toolchains, and timeout evidence in the run records; the
-other two took a receiver probe and a source audit, both posted in the
-open. The paper reports the boards together with everything known to
-weaken them, then pre-registers the run that removes the weaknesses.
+one sample, not a ranking. A hardcoded ceiling on one encoder path graded a
+slow model's unfinished cases as failures. A read-only audit found the
+three encoder backends administering different exams. And the setting that
+appeared to pin reasoning effort did nothing on any backend. Two of these
+four surfaced through the same deterministic machinery that grades the
+models — the fold's refusal to blend toolchains, and timeout evidence in
+the run records; the other two took a read-only audit and a receiver probe,
+both posted in the open. The paper reports the boards together with
+everything known to weaken them, then pre-registers the run that removes
+the weaknesses.
 
 Two stakes belong on the table before any results. The benchmark routes
 the Axiom Foundation's own production encoder, which defaulted to
 gpt-5.6-terra when these boards ran — the boards exist to test that
-routing, and they ended up arguing against it. And the author works on
-both the Axiom Foundation and PolicyEngine, whose UK model is the planned
-oracle for three of the sixteen cases.
+routing, and the terra-below-sol result of @sec-variance runs against the
+default. And the author works at both the Axiom Foundation and
+PolicyEngine, whose UK model is the planned oracle — the independent
+implementation whose computed results would cross-check the encodings —
+for three of the sixteen cases.
 
-## The task
+## The task {#sec-task}
 
 One case gives one model one provision. The harness resolves the
 provision's text from a signed corpus release — every run here pins
 `{python} r.corpus_release`, verified against its publishing key, with a
-recorded expression date per provision
-(`{python} expr_lo` to `{python} expr_hi` across the v3 suite) — and
-places it in a cold workspace: the resolved source text and its provision
-metadata, and nothing else. No existing encoding of the target, no
-repository context, no stub files; the context manifest of every cold case
-on every board records zero context files. The model — throughout this
-paper, a *runner*: a CLI coding product wrapping a model, with its own
-system prompt, tools, and retry behavior — writes the RuleSpec module: the
-parameters and formulas the provision defines, citations back to it,
-effective dates, and the companion tests the repository requires of every
-rule. The suite covers UK law because the UK repository was the first to
-reach the signed-release toolchain the eval requires; a US suite follows
-once the US repository completes the same migration.
+recorded expression date (the consolidation date of the resolved text) per
+provision, `{python} expr_lo` to `{python} expr_hi` across the v3 suite —
+and places it in a cold workspace: the resolved source text and its
+provision metadata, and nothing else. The per-case workspace context
+manifests, frozen in this paper's snapshot with every board row hash-bound
+to its case's manifest, list zero context files for every cold case: no
+existing encoding of the target, no repository context, no stub files. The
+model — throughout this paper, a *runner*: a CLI coding product wrapping a
+model, with its own system prompt, tools, and retry behavior — writes the
+RuleSpec module: the parameters and formulas the provision defines,
+citations back to it, effective dates, and the companion tests the
+repository requires of every rule. The suite covers UK law because the UK
+repository was the first to reach the signed-release toolchain the eval
+requires; a US suite follows once the US repository completes the same
+migration.
 
 Capability cases run cold for a reason. A workspace with repository
 context includes whatever encoding of the provision already merged, so a
 capability score would come to measure copying, and would drift as the
-repository grows. The last three cases run with repository context as
-oracle candidates: they sit on the PolicyEngine UK comparison path and
-will carry a live oracle check once that plumbing is verified for eval
-cases; until then they grade on the same deterministic gates as everything
-else.
+repository grows. The last three cases run exactly that way, as oracle
+candidates: their frozen manifests list 2–16 context files each, and every
+one includes the already-merged encoding of the target provision and its
+tests. Their cells therefore measure work with the merged answer available
+— the risk the cold design exists to avoid — and the board table carries a
+cold-only subscore beside the headline for that reason. They sit on the
+PolicyEngine UK comparison path and will carry a live oracle check once
+that plumbing is verified for eval cases; until then they grade on the
+same deterministic gates as everything else.
 
 ```{python}
 #| echo: false
@@ -313,19 +329,24 @@ table(
 )
 ```
 
-Two suite labels misdescribe their resolved text, and the paper describes
-the text rather than the labels. The case named `class_2_nic` pins a
-citation path that resolves to SSCBA 1992 s. 13, *Class 3* contributions —
-a voluntary flat-rate contribution with no small-profits threshold — so
-its name states the wrong contribution class; the suite manifest's own
-comment repeats the error. And `hicbc_phaseout` resolves the liability and
+Three suite-manifest statements misdescribe the instrument, and the paper
+describes the instrument rather than the statements. The case named
+`class_2_nic` pins a citation path that resolves to SSCBA 1992 s. 13,
+*Class 3* contributions — a voluntary flat-rate contribution with no
+small-profits threshold — so its name states the wrong contribution class;
+the suite manifest's own comment repeats the error. The high income child
+benefit charge (HICBC) case, `hicbc_phaseout`, resolves the liability and
 threshold provision (s. 681B); the taper arithmetic lives in s. 681C,
 which the workspace does not supply, so the case probes the charge
-condition, not the phaseout formula its name suggests. Both labels are
-frozen into the case identities of every board, so renaming them starts a
-new board; both defects are filed upstream, and the measurements
-themselves stand — every model received the same resolved text, whatever
-the label said.
+condition, not the phaseout formula its name suggests — of the tapers
+group, only `personal_allowance_taper`'s workspace contains the taper
+arithmetic itself. And the manifest's header claims cold workspaces carry
+definition stubs; the frozen context manifests show none did. The case
+labels are frozen into the case identities of every board, so renaming
+them starts a new board; all three defects are filed upstream
+([axiom-encode#1438](https://github.com/TheAxiomFoundation/axiom-encode/issues/1438)),
+and the measurements themselves stand — every model received the same
+resolved text, whatever the label said.
 
 Two cases exist to catch invented numbers. `child_benefit_entitlement`
 supplies entitlement conditions whose weekly amounts live in a different
@@ -350,28 +371,35 @@ text. The gate-pass count is the headline, and nothing else folds into it.
 What a gate pass certifies deserves one plain statement. Compile and
 repository validation run independently of the model, but the companion
 tests are the model's own: a model that writes weak tests passes its own
-encoding more easily than one that writes strict tests. And the grounding
-scan — the validator parses the artifact's RuleSpec, extracts every
-numeric literal a rule carries, and matches each against the numeric
-occurrences of the supplied source text, recording a per-literal decision
-in the run artifact — runs one-directional: an invented number fails it,
-an omitted number cannot. (A separate advisory column tracks how many of
-the source's numbers the encoding covered.) A gate pass therefore
-certifies a mergeable, self-consistent, grounded draft — not a legally
-correct encoding.
+encoding more easily than one that writes strict tests. The grounding scan
+runs one-directional: an invented number fails it, an omitted number
+cannot. (The validator parses the artifact's RuleSpec, extracts the
+numeric literals its rules carry — exempting dates, structural index
+literals, and the small integers −1 through 3 — and matches each against
+the supplied source text's numeric occurrences, word forms included:
+passing taper artifacts carry 0.5 as a grounded literal against source
+text that says "one-half". Each decision records in the run artifact.)
+The omitted-number direction has its own bound: an advisory column tracks
+how much of the source's numerics each encoding covered, and on v3 five of
+the six runners' artifacts covered
+`{python} f"{cov_others_lo:.0f}"`–`{python} f"{cov_others_hi:.0f}"`% of
+their sources' numeric occurrences while opus-5's covered
+`{python} f"{coverages['opus-5']:.1f}"`% — under-encoding is visible, not
+free. A gate pass therefore certifies a mergeable, self-consistent,
+grounded draft — not a legally correct encoding.
 
 Everything else reports alongside as advisory columns. A pinned reviewer
-model scores each encoding's statutory fidelity — the `opus` CLI alias,
-which resolved to claude-opus-4-8 on boards v2 and v3, verified live from
-its traces, though the resolved reviewer identity is not yet recorded in
-the result rows themselves; one reviewer model scores every runner's
-artifacts. A single noisy judge whose own family competes on the board
-cannot referee it neutrally, so its score sits beside the gates rather
-than inside them. On board v3 its mean scores span `{python} review_lo` to
-`{python} review_hi` of 10 across all six runners (scoring
+model scores each encoding's statutory fidelity; one reviewer model scores
+every runner's artifacts. The pin is the `opus` CLI alias, which resolved
+to claude-opus-4-8 under live trace verification on the v2 run day; v3 ran
+the same rig configuration the next day without an independent re-check,
+and the result rows do not record the resolved identity. A single noisy
+judge whose own family competes on the board cannot referee it neutrally,
+so its score sits beside the gates rather than inside them. On board v3
+its mean scores span `{python} review_lo` to `{python} review_hi` of 10
+across all six runners (scoring
 `{python} str(review_cov_lo)`–`{python} str(review_cov_hi)` of each
-runner's cases) — a band too narrow to separate the leaders even if it
-were allowed to try. The oracle column stays empty until the PolicyEngine
+runner's cases) — a band too narrow to order the leaders. The oracle column stays empty until the PolicyEngine
 UK runtime path is verified for eval cases. The median-latency and cost
 columns carry measured values.
 
@@ -389,9 +417,10 @@ Runs fold into one board only when the suite name, the ordered case
 identities, the corpus release, and the execution identity — the recorded,
 normalized set of score-affecting toolchain components — all match. Runner
 sets may differ: a model added later folds cleanly without re-running
-incumbents. A changed encoder refuses to fold, so a new toolchain starts a
-new board by construction. The variance finding (@sec-variance) and the
-timeout finding (@sec-timeout) both end in that refusal doing real work.
+incumbents. Runs from a changed encoder refuse to fold, so a new toolchain
+starts a new board by construction. The variance finding (@sec-variance)
+and the timeout finding (@sec-timeout) both end in that refusal doing real
+work.
 
 ## Three boards {#sec-boards}
 
@@ -410,7 +439,7 @@ table(
         for b in BOARD_ORDER
     ],
     "The three boards. Costs are API-equivalents: codex-backend tokens "
-    "priced at published July 2026 rates, Claude-backend costs as the "
+    "priced at published July 2026 rates; Claude-backend costs are the "
     "CLI's own recorded per-call figures. All runs drew on "
     "subscription-billed seats.",
 )
@@ -424,13 +453,14 @@ the encoder that fixed it. v3 stands as the current board.
 ```{python}
 #| echo: false
 table(
-    ["runner", "model", "gate pass", "T", "artifacts", "compile", "ci",
-     "grounded", "median"],
+    ["runner", "model", "gate pass", "cold", "T", "artifacts", "compile",
+     "ci", "grounded", "median"],
     [
         [
             s.runner,
             f"`{s.model}`",
             f"**{s.gate_label}** ({s.gate_pct:.1f}%)",
+            f"{r.cold_gate_passes(s.runner)}/13",
             str(s.timeouts) if s.timeouts else "—",
             f"{s.artifacts}/{s.cases}",
             s.compile_rate,
@@ -442,11 +472,17 @@ table(
     ],
     f"Board v3 — encoder {r.board_meta('v3')['encoder_version']}, run "
     f"{r.run_date('v3')}. The gate-pass column counts cases that clear "
-    "all four gates. T counts cases that exhausted the recorded time "
-    "budget; compile, ci (repository validation, companion tests "
-    "included), and grounded rates cover produced artifacts only. The "
-    "advisory reviewer and oracle columns are omitted here; they live in "
-    "the board record.",
+    "all four gates; cold subsets the thirteen cold cases (the three "
+    "oracle-path cases ran with the merged target encoding in-workspace, "
+    "@sec-task). T counts cases that exhausted the recorded time budget; "
+    "artifacts counts cases that produced a gradeable artifact; compile, "
+    "ci (repository validation, companion tests included), and grounded "
+    "rates cover produced artifacts only; median is case duration. "
+    "OpenAI-family runners rode the codex path (workspace, tools) and "
+    "Anthropic-family runners rode the Claude CLI prompt-only, so "
+    "cross-family comparisons inherit @sec-parity. The advisory reviewer "
+    "and oracle columns live in the board record.",
+    colwidths=[9, 14, 15, 8, 5, 10, 10, 9, 10, 10],
 )
 ```
 
@@ -470,7 +506,7 @@ table(
 ```{python}
 #| echo: false
 #| label: fig-boards
-#| fig-cap: "Gate passes per model across the three boards. Panels order by board v3 rank; the y-axis runs 0–16 cases. The boards ran on different encoder versions, so each line connects runs of the suite, not draws from one instrument. The hollow marker is board v2's fable row, which a 600-second harness ceiling truncated (@sec-timeout) — a floor, not a capability reading. fable and opus-5 joined the roster after v1."
+#| fig-cap: "Gate passes per model across the three boards. Panels follow board v3 rank; the y-axis runs 0–16 cases. The boards ran on different encoder versions, so each line connects runs of the suite, not draws from one instrument — and fable and opus-5 rode the Claude CLI prompt-only while the rest rode the codex path with a workspace, so cross-family comparisons inherit @sec-parity. The hollow marker is board v2's fable row, which a 600-second harness ceiling truncated (@sec-timeout) — a floor, not a capability reading. fable and opus-5 joined the published roster at v2; a completed same-toolchain fable run under the v1 encoder was never folded, frozen in this paper's snapshot as excluded (@sec-integrity)."
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -543,22 +579,25 @@ clear `{python} g553.gate_label` and `{python} sol3.gate_label` while the
 control (luna) sits at `{python} v3["luna"].gate_label`; the smallest
 leader-to-tail gap on the board (`{python} str(yard["min_gap"])` cases)
 exceeds the largest gate-pass delta the rerun produced
-(`{python} str(yard["max_delta"])`). opus-5's
-`{python} v3["opus-5"].gate_label` sits in the same tail, and that half of
-the reading is cross-family: opus-5 sat the Claude path's version of the
-exam (@sec-parity), so read its gap as a bound observed under a harsher
-input regime, pending v4.
+(`{python} str(yard["max_delta"])` cases), and the separation holds on the
+cold-only subscore. opus-5's `{python} v3["opus-5"].gate_label` sits in
+the same tail, and that half of the reading is cross-family: opus-5 sat
+the Claude path's exam — prompt-only, no tools (@sec-parity) — so,
+assuming fewer affordances can only depress a score, read its observed
+score as a floor, pending v4.
 
-Second, no model put a number past the grounding scan. Across the
-`{python} str(grounding["artifacts"])` artifacts produced over all three
-boards, the scan checked `{python} str(grounding["literals"])` numeric
-literals and flagged `{python} str(grounding["flagged_artifacts"])`
-artifacts — the two grounding trap cases included. The scan's sensitivity
-is what @sec-gates describes and no more (its extraction changed between
-v2 and v3 alongside the validator work of @sec-variance), so the flat
-claim this supports reads: on this suite, the binding check was test
-validation, not literal grounding — models fail by writing encodings
-whose tests or validation prove them wrong, not by inventing rates.
+Second, the grounding scan flagged nothing. On v3 it checked
+`{python} str(r.grounding_totals_v3["literals"])` numeric literals across
+`{python} str(r.grounding_totals_v3["artifacts"])` artifacts and flagged
+none; pooled across all three boards — two scan versions, the change
+disclosed in @sec-variance — it checked
+`{python} str(grounding["literals"])` literals across
+`{python} str(grounding["artifacts"])` artifacts and still flagged none,
+the two grounding-trap cases of @sec-task included. The scan's sensitivity
+is what @sec-gates describes and no more, so the flat claim this supports
+reads: on this suite, the binding check was test validation, not literal
+grounding — models fail by writing encodings whose tests or validation
+prove them wrong, not by inventing rates.
 
 Third, speed and cost split by backend, and family rides the backend
 exactly: every OpenAI-family runner rode codex, every Anthropic-family
@@ -568,7 +607,8 @@ fable's ran `{python} fable3.median_seconds` seconds and emitted
 `{python} fable_out_tokens` output tokens, putting its suite cost at
 `{python} r.money(fable3.cost)` against `{python} r.money(sol3.cost)` for
 sol — `{python} r.fable_cost_multiple_of_sol`× the cost at a lower
-gate-pass count on this board, across the two cost bases the annex labels.
+gate-pass count on this board, though the two figures rest on different
+cost bases, which the annex labels.
 How much of the latency and token split reflects the models and how much
 the harness modes they ran under — an agentic workspace loop for codex,
 prompt-only generation for Claude — is exactly what @sec-parity says v1–v3
@@ -592,13 +632,14 @@ table(
         for s in sorted(ranked3, key=lambda s: s.cost)
     ],
     "Board v3 cost annex, API-equivalent; rows ordered by suite cost, "
-    "and per pass = cost per gate pass. The Claude CLI reports its own "
-    "per-call cost, recorded verbatim; recomputing it from a rate table "
-    "would mean inventing a rate for claude-opus-5, which has no "
-    "published price in the reference the harness bundles. The Claude "
-    "CLI also reports near-zero input tokens in its non-interactive "
-    "print mode, and we take its recorded cost as pricing the full "
-    "exchange.",
+    "and per pass = cost per gate pass. Codex-backend rows price "
+    "recorded tokens at published July 2026 rates, cache reads at 10% "
+    "of the input rate. The Claude CLI reports its own per-call cost, "
+    "recorded verbatim; recomputing it from a rate table would mean "
+    "inventing a rate for claude-opus-5, which has no published price "
+    "in the reference the harness bundles. The Claude CLI also reports "
+    "near-zero input tokens in its non-interactive print mode, and we "
+    "take its recorded cost as pricing the full exchange.",
     colwidths=[11, 15, 15, 15, 11, 13, 20],
 )
 ```
@@ -615,13 +656,17 @@ gate-pass counts moved: `{python} delta_line` —
 level the movement decomposes into
 `{python} str(trans["fail_to_pass"])` fail-to-pass flips against
 `{python} str(trans["pass_to_fail"])` pass-to-fail, plus
-`{python} str(trans["kill_to_pass"])` flips from fable's harness-killed v2
-rows — those three have a mechanical explanation, the timeout fix of
-@sec-timeout. The remaining flips ran three-to-one toward passing, which
-symmetric sampling noise alone would not produce. Three causes confound,
-and two runs cannot apportion them: sampling nondeterminism in the models,
-real toolchain change — the validator gained typed numeric occurrences and
-a locale profile between the boards
+`{python} _WORDS[trans["kill_to_pass"]]` flips from fable's harness-killed
+v2 rows — those have a mechanical explanation, the timeout fix of
+@sec-timeout. The remaining flips ran
+`{python} str(trans["fail_to_pass"])` to
+`{python} str(trans["pass_to_fail"])` toward passing, a skew symmetric
+sampling noise would rarely produce (exact binomial
+p ≈ `{python} f"{r.flip_binomial_p:.2f}"`, before accounting for the
+flips clustering by model and case). Three causes confound, and two runs
+cannot apportion them: sampling nondeterminism in the models, real
+toolchain change — the validator gained typed numeric occurrences and a
+locale profile between the boards
 ([#1285](https://github.com/TheAxiomFoundation/axiom-encode/pull/1285)),
 alongside the timeout fix
 ([#1284](https://github.com/TheAxiomFoundation/axiom-encode/pull/1284)) —
@@ -633,21 +678,24 @@ Four things follow:
 
 - **A board is one sample.** gpt-5.5 leads v3 at
   `{python} g553.gate_label` with sol at `{python} sol3.gate_label` — one
-  case apart, and gpt-5.5 itself moved four cases between boards. The
-  order of ranks one and two is not a finding.
+  case apart, and gpt-5.5 itself moved
+  `{python} _WORDS[sum(r.runner_flips("gpt-5.5").values())]` cases between
+  boards. The order of ranks one and two is not a finding.
 - **The extremes are findings.** The smallest gap separating the leaders
   from the tail (`{python} str(yard["min_gap"])` cases) exceeds every
-  delta the rerun produced (`{python} str(yard["max_delta"])`).
+  delta the rerun produced (`{python} str(yard["max_delta"])` cases).
 - **A score is citable only with its encoder version.** This paper writes
   encoder versions next to every number for that reason, and the fold
-  refuses to blend versions mechanically.
+  mechanically refuses to blend versions.
 - **One non-extreme ranking result reproduced on every board where both
-  models have clean rows: terra below sol.** terra scored
-  `{python} terra_path` across the boards — the only model whose count did
-  not move between the six-model boards — while sol scored
-  `{python} sol_path`. The July bake-off this benchmark formalizes had
-  read the two as interchangeable on a smaller, easier case set; the
-  finding that survives every board is that the larger, colder suite
+  models have clean rows: terra below sol.** terra — the production
+  default the introduction discloses — scored `{python} terra_path`
+  across the boards, the only model whose count did not move between the
+  six-model boards, while sol scored `{python} sol_path`. No single
+  board's gap clears the rerun yardstick on its own; the replication
+  across all three boards is the finding. The July bake-off this
+  benchmark formalizes had read the two as interchangeable on a smaller
+  case set; what survives every board is that the larger, colder suite
   separates them.
 
 ### A timeout that graded slowness as failure {#sec-timeout}
@@ -657,9 +705,9 @@ encoder path. The codex path exposed configurable timeouts; the Claude
 path hardcoded one constant that nobody had reason to read. fable's median
 case ran `{python} fable2.median_seconds` seconds on that board against
 the codex runners' `{python} v2_codex_lo`–`{python} v2_codex_hi` seconds —
-and that median understates fable's true pace, because the harness killed
-`{python} str(v2f["killed"])` of its 16 cases with no artifact and
-recorded them at zero duration; over the
+and that median understates fable's true case durations, because the
+harness killed `{python} str(v2f["killed"])` of its 16 cases with no
+artifact and recorded them at zero duration; over the
 `{python} str(v2f["completed"])` cases that completed, its median was
 `{python} str(v2f["completed_median_s"])` seconds. The fold scored each
 absent artifact as a compile and grounding miss. Among the completed
@@ -681,14 +729,19 @@ longest case ran `{python} str(r.v3_codex_max_seconds)` seconds. A case
 that exhausts its budget now records `timed_out`, renders as T on the
 grid, and drops out of the artifact denominators instead of masquerading
 as a bad encoding. Execution identity carries the whole timeout policy, so
-runs under different budgets refuse to fold, the same way different
-encoders do.
+runs under different budgets refuse to fold, the same way runs from
+different encoders do.
 
-Board v3 exercised the whole path on real artifacts. All six runners
-finalized with no operator salvage. On v2, two of six had needed manual
-recovery: compile-failure output embedded staging-directory paths that
-differ per run, and the same fix normalized them. And the board's one
-timeout — fable's `{python} v3f_timeout["case"]`, which exhausted its
+Board v3 exercised the rebuilt timeout-and-finalization machinery on real
+artifacts: all six runners completed the harness's finalize step with no
+operator recovery. On v2, two of six runners had needed it — the output of
+failed compiles embedded staging-directory paths, which differ per run,
+and the finalizer refused the mismatch. Recovery re-derived their
+results.json from the already-produced artifacts with the suite's
+revalidate command; no encoding or gate input changed, and the
+[v2 board record](https://github.com/TheAxiomFoundation/axiom-encode/issues/1189#issuecomment-5080564313)
+discloses which runners. And v3's one timeout — fable's
+`{python} v3f_timeout["case"]`, which exhausted its
 `{python} f"{v3f_timeout['seconds']:,}"`-second case budget — reads as
 exactly what it is.
 
@@ -697,7 +750,7 @@ exactly what it is.
 Every board above ran with a harness line that appeared to pin codex
 reasoning effort: `-c reasoning_effort="low"` on every codex invocation.
 `reasoning_effort` is not a recognized Codex configuration field — the
-real key is `model_reasoning_effort` — and codex invoked without
+real key is `model_reasoning_effort` — and Codex invoked without
 `--strict-config` accepts unknown keys silently. The line never did
 anything. Every codex runner on every board ran at its receiver default —
 the *receiver* being whatever sits across the invocation, here the CLI
@@ -710,13 +763,14 @@ comparison is controlled.
 
 A probe established what each knob does on one task: a nine-seat
 constraint-counting puzzle with a single integer answer,
-`{python} str(probe_n_codex)` samples per level on codex and
-`{python} str(probe_n_claude)` on the Claude CLI. (The frozen probe
-record's own header says five per level; that holds only for the codex
-arm — an instrument misdescribing itself in a section about instruments
-misdescribing themselves.) On codex, the recognized key moves real
-resources on this probe: gpt-5.6-terra's median reasoning tokens rose
-from `{python} r.thousands(probe_lo["median"])` at low to
+`{python} str(probe_n_codex)` samples per level on the codex arms and
+`{python} str(probe_n_claude)` on the Claude CLI — an *arm* being one
+(runner, effort) condition. (The frozen probe record's own header says
+"N=5 per level"; that holds only for the codex arm — an instrument
+misdescribing itself in a section about instruments misdescribing
+themselves.) On codex, the recognized key moves real resources on this
+probe: gpt-5.6-terra's median reasoning tokens rose from
+`{python} r.thousands(probe_lo["median"])` at low to
 `{python} r.thousands(probe_xhigh["median"])` at xhigh and median wall
 time from `{python} str(probe_lo["wall_s"])` to
 `{python} str(probe_xhigh["wall_s"])` seconds, though not monotonically —
@@ -728,12 +782,13 @@ spread
 (`{python} f"{min(probe_ultra['all']):,.0f}–{max(probe_ultra['all']):,.0f}"`
 reasoning tokens). On the Claude CLI, `--effort` produced no monotone
 trend at `{python} str(probe_n_claude)` samples per level: claude-opus-5
-returned the identical answer at every level, wall time held at 11–13
+returned the identical answer at every level, wall time held at
+`{python} str(r.claude_probe_wall_range[0])`–`{python} str(r.claude_probe_wall_range[1])`
 seconds, and the cost medians sat at
-`{python} f"{claude_other_lo:.3f}"`–`{python} f"{claude_other_hi:.3f}"`
-dollars everywhere except low
-(`{python} f"{claude_low_median:.3f}"`, pulled by a
-`{python} f"{max(claude_low_all):.3f}"` outlier in its three samples).
+`{python} r.money3(claude_other_lo)`–`{python} r.money3(claude_other_hi)`
+everywhere except low (`{python} r.money3(claude_low_median)` — elevated
+at three samples, which ranged
+`{python} r.money3(r.claude_probe_low_samples[0])`–`{python} r.money3(r.claude_probe_low_samples[1])`).
 Two hypotheses fit that result and this probe cannot separate them: the
 model regulates its own reasoning depth, or the flag is inert in the
 CLI's print mode — the same defect class this section began with. A task
@@ -742,10 +797,9 @@ either way.
 
 The design consequence holds under both hypotheses. Cross-family effort
 matching has no honest implementation on these receivers, so the design
-that survives is asymmetric and says so: sweep the codex arms — an *arm*
-being one (runner, effort) condition — at declared, receiver-verified
-levels; run the Claude arms at their receiver default and label them that
-way. Board v4 records requested and effective effort in execution
+that survives is asymmetric and says so: sweep the codex arms at
+declared, receiver-verified levels; run the Claude arms at their receiver
+default and label them that way. Board v4 records requested and effective effort in execution
 identity, so effort-mismatched runs refuse to fold — the same mechanism
 that already refuses mixed toolchains.
 
@@ -764,11 +818,11 @@ versions went unrecorded, and version drift changes which flags a CLI
 even accepts; the reviewer's resolved identity went unrecorded the same
 way. The timeout budgets of @sec-timeout differ by backend too.
 
-None of this shows on a leaderboard cell, and all of it shapes scores.
-The v1–v3 cross-family readings compare models on different evidence, and
-this paper flags each one where it appears — the first and third readings
-of @sec-boards, including fable's cost multiple — as weaker than the
-within-family readings.
+None of this shows on a leaderboard cell, and the two paths that produced
+rows shaped every score. The v1–v3 cross-family readings compare models on
+different evidence, and this paper flags each one where it appears — the
+first and third readings of @sec-boards, including fable's cost multiple —
+as weaker than the within-family readings.
 
 The parity encoder closes the gap by construction rather than by
 calibration: every backend receives identical prompt bytes with all
@@ -780,13 +834,13 @@ and records CLI versions per row.
 
 ### Case 04, flagged and retracted {#sec-case04}
 
-All `{python} str(case04["runs_v1_v2"])` model-runs across boards v1 and
-v2 failed `income_tax_rate_bands` —
+All `{python} _WORDS[case04["runs_v1_v2"]]` model-runs across boards v1
+and v2 failed `income_tax_rate_bands` —
 `{python} _WORDS[case04["attempts_failed"]]` as genuine attempts, plus
 fable's v2 row, which the 600-second ceiling killed before it could
 attempt — and the v2 record flagged the case as a suspected suite defect:
-at zero for ten, a broken fixture explained the data at least as well as
-a hard provision. Board v3 answered — `{python} case04_passers` both
+at zero for `{python} _WORDS[case04["runs_v1_v2"]]`, a broken fixture
+explained the data at least as well as a hard provision. Board v3 answered — `{python} case04_passers` both
 passed it — and we retracted the flag on the tracking issue the day the
 board posted. The failures had measured difficulty, not validity. The
 operating rule the episode set: unanimous failure justifies reading the
@@ -794,9 +848,11 @@ artifacts, never disqualifying the case from a summary table.
 
 ### Integrity notes {#sec-integrity}
 
-The archived boards carry two integrity notes, and the run they concern is
-frozen in this paper's snapshot, marked discarded, so its numbers derive
-like every other. opus-5's first v2 run returned
+The archived boards carry three integrity notes, and the two excluded
+runs they concern are frozen in this paper's snapshot, marked excluded,
+so their numbers derive like every other.
+
+opus-5's first v2 run returned
 `{python} f"{disc['gate_passes']}/{disc['cases']}"` with
 `{python} _WORDS[disc["limit_errors"]]` cases dying on a session-limit
 error at a median of `{python} f"{disc['limit_median_s']}"` seconds: its
@@ -808,10 +864,26 @@ of `{python} str(opus2_dur["min_s"])` to
 verified from traces; we published only the clean row. luna's v2
 advisory-review coverage reached
 `{python} str(r.v2_luna_review_coverage)` of 16 after the reviewer's
-account hit its own limit mid-run; the deterministic gates read only
-compile, validation, and grounding, so its gate column stood. Both events
-taught the same operating rule: an encoder never shares an account with
-its own judge.
+account hit its own limit mid-run; none of the four deterministic gates
+reads the reviewer, so its gate column stood. Both events taught the same
+operating rule: an encoder never shares an account with its own judge.
+
+And fable ran alongside board v1, not only after it. Its first attempts
+died on harness infrastructure — a malformed MCP configuration that
+killed every Claude call instantly, then CLI authentication — and its
+completed 2026-07-24 run produced
+`{python} str(r.fable_v1["cases"])` case rows that the finalizer then
+refused: the nondeterministic-reviewer revalidation defect
+([#1280](https://github.com/TheAxiomFoundation/axiom-encode/pull/1280))
+later fixed. No results.json exists, so the run could never fold into
+board v1 — whose record had promised fable would join it. It is frozen
+here as excluded, and its rows corroborate @sec-timeout:
+`{python} _WORDS[r.fable_v1["kills_600s"]]` cases killed at the
+600-second ceiling, a `{python} str(r.fable_v1["median_s"])`-second
+median, and `{python} str(r.fable_v1["gate_passes"])` of 16 gate passes
+among `{python} str(r.fable_v1["artifacts"])` artifacts — a floor under
+the same ceiling that shaped v2, published as capability neither then nor
+now.
 
 ## Board v4, pre-registered
 
@@ -823,24 +895,33 @@ open at writing) merges. Its committed design:
   by construction, folded by the same contract.
 - **One exam.** Identical prompt bytes on every backend, context inlined,
   empty workspaces, overflow loud, partials rejected, undeclared access
-  terminal, CLI versions recorded per row (@sec-parity).
+  terminal; the harness preflights and records CLI versions and the
+  reviewer's resolved identity per row (@sec-parity).
 - **Effort as a recorded axis.** Codex arms swept at low, high, and
-  ultra, receiver-verified; Claude arms at their receiver default,
-  disclosed as such (@sec-effort). Effort-mismatched runs refuse to fold.
-- **Repeated runs per arm on the pinned encoder, reported as mean and
-  min–max range.** Single draws retire (@sec-variance).
-- **Every run publishes.** A run may be excluded from the fold only for
+  ultra; each run records its requested level beside its reasoning-token
+  count as the per-run verification. Claude arms run at their receiver
+  default, disclosed as such (@sec-effort). Effort-mismatched runs refuse
+  to fold.
+- **Repeated runs per arm on the pinned encoder.** The primary readout is
+  the per-arm gate-pass mean with min–max range; the yardsticks of
+  @sec-variance govern any comparison claim. Single draws retire.
+- **A scan positive control.** Before the board folds, a seeded canary
+  artifact with a planted ungrounded literal must fail the grounding
+  gate.
+- **Every run publishes.** The fold may exclude a run only for
   infrastructure failures of enumerated classes — quota exhaustion,
   authentication, harness crash — and an excluded run's results freeze
-  alongside the board, marked discarded, as this paper's snapshot already
-  does for the run in @sec-integrity.
+  alongside the board, marked excluded, as this paper's snapshot already
+  does for the runs in @sec-integrity.
 
-The run count per arm and the exact roster stay open until launch and
-will post to the tracking issue before the first run starts. v4 is the
-first board whose cross-family rows carry the same evidentiary weight as
-its within-family rows. This paper refreezes with it: new snapshot,
-re-derived numbers, same standing rule that board statistics appear only
-as derivations from frozen artifacts.
+This pre-registration binds through the paper's public git history. The
+run count per arm and the exact roster stay open until launch and will
+post to the tracking issue before the first run starts. v4 is the first
+board whose cross-family rows sit the same exam as its within-family
+rows; effort remains a disclosed asymmetric axis (@sec-effort). This
+paper refreezes with it: new snapshot, re-derived numbers, same standing
+rule that board statistics appear only as derivations from frozen
+artifacts.
 
 ## Limitations
 
@@ -874,10 +955,11 @@ behavior, and retry policy — and boards v1–v3 did not equalize them
 
 Every board statistic, probe value, and integrity-note number in this
 paper derives in code from the frozen snapshot — the boards'
-`results.json` files (one per runner per board: 4+6+6), the discarded run
-of @sec-integrity, the suite manifest as the v3 encoder commit pinned it,
-and the effort-probe record — each file sha256-checked against the
-snapshot manifest at load. The derivation module re-implements the
+`results.json` files (one per runner per board: 4+6+6), the two excluded
+runs of @sec-integrity, the sixteen per-case workspace context manifests,
+the suite manifest as the v3 encoder commit pinned it, and the
+effort-probe record — each file sha256-checked against the snapshot
+manifest at load. The derivation module re-implements the
 deterministic pieces of the `eval-board` fold, verifies its derived
 headlines against the board records posted to the tracking issue, and
 refuses to render the manuscript on any mismatch; this render passed that

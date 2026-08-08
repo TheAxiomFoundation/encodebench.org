@@ -333,7 +333,7 @@ const METHODOLOGY = [
   {
     title: "Every run carries its provenance",
     detail:
-      "Each run binds the exact corpus release (Ed25519-verified), the encoder and rules-engine versions, and the repository and waiver state that graded it, with signed result evidence. A cell on the board traces to precisely what produced it.",
+      "Each run binds the exact corpus release (Ed25519-verified), the encoder and rules-engine versions, and the repository and waiver state that graded it, with hash-attested result evidence. A cell on the board traces to precisely what produced it.",
   },
 ];
 

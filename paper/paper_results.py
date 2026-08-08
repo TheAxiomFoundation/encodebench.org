@@ -120,9 +120,36 @@ PUBLISHED = {
     },
 }
 PUBLISHED_PROBE = {
-    ("codex", "low"): 145.0,
-    ("codex", "xhigh"): 2756.0,
+    ("codex", "medians"): {
+        "low": 145.0,
+        "medium": 407.0,
+        "high": 2243.0,
+        "xhigh": 2756.0,
+        "ultra": 1685.0,
+    },
+    ("codex", "walls"): {"low": 20, "medium": 20, "high": 44, "xhigh": 53,
+                          "ultra": 106},
+    ("claude", "medians"): {
+        "low": 0.051,
+        "medium": 0.032,
+        "high": 0.033,
+        "xhigh": 0.03,
+        "max": 0.032,
+    },
+    ("claude", "walls"): {"low": 11, "medium": 11, "high": 12, "xhigh": 13,
+                           "max": 12},
     ("claude", "answers"): {"28"},
+}
+
+# Advisory source-coverage rates from the v3 board record (#1189): covered
+# source numeric occurrences over source occurrences, artifacts only.
+PUBLISHED_V3_COVERAGE = {
+    "gpt-5.5": 100.0,
+    "sol": 100.0,
+    "fable": 93.1,
+    "terra": 100.0,
+    "luna": 94.7,
+    "opus-5": 71.2,
 }
 
 
@@ -334,16 +361,92 @@ class PaperResults:
         return out
 
     @cached_property
-    def discarded(self) -> dict[str, dict]:
-        """Discarded runs, hash-verified; frozen so integrity notes derive."""
-        out: dict[str, dict] = {}
+    def discarded(self) -> dict[str, dict | list]:
+        """Excluded runs, hash-verified; frozen so integrity notes derive.
+
+        ``results-json`` entries parse to the payload dict;
+        ``suite-results-jsonl`` entries parse to the list of per-case
+        result rows a never-finalized run left behind.
+        """
+        out: dict[str, dict | list] = {}
         for name, entry in self.manifest.get("discarded_runs", {}).items():
             stored = self._load_verified(entry["file"], entry["sha256_gz"])
             raw = gzip.decompress(stored)
             if _sha256(raw) != entry["sha256_json"]:
                 raise ValueError(f"Hash mismatch (content): {entry['file']}")
-            out[name] = json.loads(raw)
+            if entry.get("format") == "suite-results-jsonl":
+                out[name] = [
+                    json.loads(line)["result"]
+                    for line in raw.decode("utf-8").splitlines()
+                    if line.strip()
+                ]
+            else:
+                out[name] = json.loads(raw)
         return out
+
+    @cached_property
+    def suite_yaml(self) -> str:
+        """The suite manifest at the v3 encoder commit, hash-verified."""
+        entry = self.manifest["suite_manifest_frozen"]
+        return self._load_verified(entry["file"], entry["sha256"]).decode(
+            "utf-8"
+        )
+
+    @cached_property
+    def context_manifests(self) -> dict[int, dict]:
+        """Case index -> parsed workspace context manifest, hash-verified.
+
+        Loading also proves the binding: every board row's
+        ``context_manifest_sha256`` must equal its case's exemplar hash
+        (rows the harness killed before a workspace existed carry None).
+        """
+        exemplars: dict[int, dict] = {}
+        shas: dict[int, str] = {}
+        for entry in self.manifest["context_manifests"]["entries"]:
+            raw = self._load_verified(entry["file"], entry["sha256"])
+            exemplars[entry["case_index"]] = json.loads(raw)
+            shas[entry["case_index"]] = entry["sha256"]
+        for board, runners in self.boards.items():
+            for runner, payload in runners.items():
+                for row in payload["results"]:
+                    sha = row.get("context_manifest_sha256")
+                    index = row["eval_case"]["index"]
+                    if sha is not None and sha != shas[index]:
+                        raise ValueError(
+                            f"{board}/{runner} case {index} context manifest "
+                            "does not match the frozen exemplar"
+                        )
+        return exemplars
+
+    @cached_property
+    def workspace_composition(self) -> dict[int, dict]:
+        """Case index -> {n_context_files, kinds} from the frozen manifests."""
+        out: dict[int, dict] = {}
+        for index, manifest in self.context_manifests.items():
+            files = manifest.get("context_files") or []
+            out[index] = {
+                "n_context_files": len(files),
+                "kinds": {f.get("kind") for f in files},
+            }
+        return out
+
+    @cached_property
+    def cold_context_file_counts(self) -> set[int]:
+        """Distinct context-file counts across the thirteen cold cases."""
+        return {
+            comp["n_context_files"]
+            for index, comp in self.workspace_composition.items()
+            if index <= 13
+        }
+
+    @cached_property
+    def repo_augmented_composition(self) -> dict[int, dict]:
+        """The three oracle-path cases' workspace contents."""
+        return {
+            index: comp
+            for index, comp in self.workspace_composition.items()
+            if index >= 14
+        }
 
     def board_meta(self, board: str) -> dict:
         return self.manifest["boards"][board]
@@ -481,18 +584,71 @@ class PaperResults:
         max_delta = max(abs(d) for d in self.v2_v3_deltas.values())
         return {"min_gap": min_gap, "max_delta": max_delta}
 
+    def runner_flips(self, runner: str) -> dict[str, int]:
+        """One runner's v2→v3 case-level gate flips."""
+        v2_rows = {
+            r["eval_case"]["index"]: r
+            for r in self.boards["v2"][runner]["results"]
+        }
+        v3_rows = {
+            r["eval_case"]["index"]: r
+            for r in self.boards["v3"][runner]["results"]
+        }
+        f2p = sum(
+            1
+            for i, r in v2_rows.items()
+            if not gate_pass(r) and gate_pass(v3_rows[i])
+        )
+        p2f = sum(
+            1
+            for i, r in v2_rows.items()
+            if gate_pass(r) and not gate_pass(v3_rows[i])
+        )
+        return {"fail_to_pass": f2p, "pass_to_fail": p2f}
+
+    @cached_property
+    def flip_binomial_p(self) -> float:
+        """Two-sided exact binomial p for the non-mechanical flip split."""
+        from math import comb
+
+        k = self.v2_v3_transitions["fail_to_pass"]
+        n = k + self.v2_v3_transitions["pass_to_fail"]
+        tail = sum(comb(n, i) for i in range(k, n + 1)) / 2**n
+        return min(1.0, 2 * tail)
+
+    def cold_gate_passes(self, runner: str) -> int:
+        """Gate passes on the thirteen cold cases (indices 1–13), v3."""
+        return sum(
+            1
+            for r in self.boards["v3"][runner]["results"]
+            if r["eval_case"]["index"] <= 13 and gate_pass(r)
+        )
+
+    def coverage_pct(self, runner: str, board: str = "v3") -> float:
+        """Advisory source-coverage: covered over total source numeric
+        occurrences, summed across the runner's artifacts."""
+        covered = 0
+        total = 0
+        for r in self.boards[board][runner]["results"]:
+            metrics = r.get("metrics")
+            if metrics is None:
+                continue
+            covered += metrics.get(
+                "covered_source_numeric_occurrence_count"
+            ) or 0
+            total += metrics.get("source_numeric_occurrence_count") or 0
+        return 100.0 * covered / total if total else float("nan")
+
     # ------------------------------------------------------------------
     # Grounding scan totals
     # ------------------------------------------------------------------
 
-    @cached_property
-    def grounding_totals(self) -> dict[str, int]:
-        """Literals the grounding scan checked across every artifact."""
+    def _grounding_totals_for(self, boards: tuple[str, ...]) -> dict[str, int]:
         artifacts = 0
         literals = 0
         flagged_artifacts = 0
-        for runners in self.boards.values():
-            for payload in runners.values():
+        for board in boards:
+            for payload in self.boards[board].values():
                 for r in payload["results"]:
                     metrics = r.get("metrics")
                     if metrics is None:
@@ -508,6 +664,16 @@ class PaperResults:
             "literals": literals,
             "flagged_artifacts": flagged_artifacts,
         }
+
+    @cached_property
+    def grounding_totals(self) -> dict[str, int]:
+        """Literals the grounding scan checked, all boards pooled."""
+        return self._grounding_totals_for(BOARD_ORDER)
+
+    @cached_property
+    def grounding_totals_v3(self) -> dict[str, int]:
+        """Literals the grounding scan checked on board v3 alone."""
+        return self._grounding_totals_for(("v3",))
 
     # ------------------------------------------------------------------
     # Timeout policy (v3 execution identity) and the v2 fable truncation
@@ -584,6 +750,26 @@ class PaperResults:
     # ------------------------------------------------------------------
     # Integrity notes, derived from frozen artifacts
     # ------------------------------------------------------------------
+
+    @cached_property
+    def fable_v1(self) -> dict:
+        """fable's completed, never-finalized run on the v1 encoder."""
+        rows = self.discarded["v1-fable-unfinalized"]
+        assert isinstance(rows, list)
+        kills = [r for r in rows if _is_600s_kill(r)]
+        durations = [
+            r["duration_ms"]
+            for r in rows
+            if isinstance(r.get("duration_ms"), int)
+            and not isinstance(r.get("duration_ms"), bool)
+        ]
+        return {
+            "cases": len(rows),
+            "gate_passes": sum(1 for r in rows if gate_pass(r)),
+            "artifacts": sum(1 for r in rows if r.get("metrics") is not None),
+            "kills_600s": len(kills),
+            "median_s": int(round(median(durations) / 1000.0)),
+        }
 
     @cached_property
     def discarded_opus5(self) -> dict:
@@ -723,6 +909,17 @@ class PaperResults:
             row["level"]: row["median"] for row in self.effort_probe["claude"]
         }
 
+    @cached_property
+    def claude_probe_wall_range(self) -> tuple[int, int]:
+        walls = [row["wall_s"] for row in self.effort_probe["claude"]]
+        return (min(walls), max(walls))
+
+    @cached_property
+    def claude_probe_low_samples(self) -> tuple[float, float]:
+        """The low level's sample range across its three draws."""
+        samples = self.probe_level("claude", "low")["all"]
+        return (min(samples), max(samples))
+
     # ------------------------------------------------------------------
     # Formatted fragments for inline prose
     # ------------------------------------------------------------------
@@ -730,6 +927,10 @@ class PaperResults:
     @staticmethod
     def money(x: float) -> str:
         return f"${x:.2f}"
+
+    @staticmethod
+    def money3(x: float) -> str:
+        return f"${x:.3f}"
 
     @staticmethod
     def thousands(x: float) -> str:
@@ -799,14 +1000,37 @@ class PaperResults:
                     f"{board} total cost {total} != published "
                     f"{expected['total_cost']}"
                 )
-        if self.probe_level("codex", "low")["median"] != PUBLISHED_PROBE[
-            ("codex", "low")
-        ] or self.probe_level("codex", "xhigh")["median"] != PUBLISHED_PROBE[
-            ("codex", "xhigh")
-        ]:
-            problems.append("codex probe medians drifted from the record")
+        for backend in ("codex", "claude"):
+            for row in self.effort_probe[backend]:
+                if row["median"] != PUBLISHED_PROBE[(backend, "medians")].get(
+                    row["level"]
+                ):
+                    problems.append(
+                        f"{backend} probe {row['level']} median drifted"
+                    )
+                if row["wall_s"] != PUBLISHED_PROBE[(backend, "walls")].get(
+                    row["level"]
+                ):
+                    problems.append(
+                        f"{backend} probe {row['level']} wall drifted"
+                    )
         if self.claude_probe_answer_sets != PUBLISHED_PROBE[("claude", "answers")]:
             problems.append("claude probe answers drifted from the record")
+        for runner, want in PUBLISHED_V3_COVERAGE.items():
+            got = round(self.coverage_pct(runner), 1)
+            if abs(got - want) > 0.05:
+                problems.append(
+                    f"v3 {runner} coverage {got} != published {want}"
+                )
+        # Touching these proves the suite yaml's hash and the per-row
+        # context-manifest binding; both raise on mismatch.
+        assert self.suite_yaml
+        assert self.workspace_composition
+        if self.cold_context_file_counts != {0}:
+            problems.append(
+                "cold cases carry context files: "
+                f"{self.cold_context_file_counts}"
+            )
         if problems:
             raise AssertionError(
                 "Derived values disagree with the published board records:\n"
@@ -815,7 +1039,8 @@ class PaperResults:
         return (
             f"verified against published records: "
             f"{sum(len(e['gate']) for e in PUBLISHED.values())} runner gate "
-            f"counts, medians, v3 artifacts/timeouts/costs, probe medians"
+            f"counts, medians, v3 artifacts/timeouts/costs/coverage, the "
+            f"full probe tables, and the context-manifest binding"
         )
 
 
@@ -846,8 +1071,27 @@ if __name__ == "__main__":
         print(f"  total {r.money(r.total_cost(board))}")
     print(f"\nv2→v3 deltas: {r.v2_v3_deltas}")
     print(f"v2→v3 transitions: {r.v2_v3_transitions}")
+    print(f"flip binomial p: {r.flip_binomial_p:.3f}")
+    print(f"gpt-5.5 flips: {r.runner_flips('gpt-5.5')}")
     print(f"extremes yardstick: {r.extremes_yardstick}")
     print(f"grounding totals: {r.grounding_totals}")
+    print(f"grounding totals v3: {r.grounding_totals_v3}")
+    print(
+        "cold v3 passes: "
+        + ", ".join(
+            f"{s.runner} {r.cold_gate_passes(s.runner)}/13"
+            for s in r.ranked("v3")
+        )
+    )
+    print(
+        "v3 coverage: "
+        + ", ".join(
+            f"{s.runner} {r.coverage_pct(s.runner):.1f}%"
+            for s in r.ranked("v3")
+        )
+    )
+    print(f"workspace composition (14-16): {r.repo_augmented_composition}")
+    print(f"fable v1 (unfinalized): {r.fable_v1}")
     print(f"v3 timeout policy: {r.v3_timeout_policy}")
     print(f"v3 codex max: {r.v3_codex_max_seconds}s")
     print(f"v2 fable: {r.v2_fable}")

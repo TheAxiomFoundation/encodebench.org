@@ -12,11 +12,14 @@ Outputs:
 ## Pipeline
 
 1. **Freeze.** `paper/scripts/freeze_snapshot.py` copies each board's
-   `results.json` files, the discarded run the integrity notes describe,
-   the suite manifest at the v3 encoder commit, and the effort-probe record
-   from the run rig into `paper/snapshot/<date>/` as deterministic gzip,
-   and writes `manifest.json` with a sha256 for every artifact. The
-   snapshot directory is committed; the rig directory it reads is private.
+   `results.json` files and the excluded runs the integrity notes describe
+   (as deterministic gzip), the sixteen per-case workspace context
+   manifests, and the effort-probe record (as-is) from the run rig
+   (`ENCODEBENCH_RIG_DIR` overrides the default), extracts the suite
+   manifest at the v3 encoder commit from a local axiom-encode clone via
+   `git show` (`ENCODEBENCH_AXIOM_ENCODE_REPO` overrides), and writes
+   `manifest.json` with a sha256 for every artifact. The snapshot
+   directory is committed; the rig directory it reads is private.
 2. **Derive.** `paper/paper_results.py` computes every quantitative claim in
    the manuscript from the frozen snapshot — it re-implements the
    deterministic pieces of `axiom-encode`'s `eval-board` fold — hash-checks
