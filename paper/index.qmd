@@ -387,9 +387,9 @@ encoding more easily than one that writes strict tests. The grounding scan
 runs one-directional: an invented number fails it, an omitted number
 cannot. (The validator parses the artifact's RuleSpec, extracts the
 numeric literals its rules carry — exempting dates, structural index
-literals, the small integers −1 through 3, and a few other structural
-forms — and matches each against the supplied source text's numeric
-occurrences, word forms included:
+literals, the small integers −1 through 3, half-up-rounding helpers, and
+decimal-scale powers of ten — and matches each against the supplied
+source text's numeric occurrences, word forms included:
 passing taper artifacts carry 0.5 as a grounded literal against source
 text that says "one-half". Each decision records in the run artifact.)
 The omitted-number direction has no deterministic bound on these boards,
@@ -514,7 +514,8 @@ table(
         for row in grid_rows
     ],
     "Board v3 per-case grid. P = gate pass, F = failed a gate (compile, "
-    "validation, or grounding), T = timeout, E = no artifact.",
+    "validation, or grounding), T = timeout, E = no artifact. "
+    "Cross-family column comparisons inherit @sec-parity.",
     colwidths=[41, 10, 10, 10, 10, 10, 9],
 )
 ```
@@ -676,10 +677,10 @@ level the movement decomposes into
 v2 rows — those have a mechanical explanation, the timeout fix of
 @sec-timeout. The remaining flips ran
 `{python} str(trans["fail_to_pass"])` to
-`{python} str(trans["pass_to_fail"])` toward passing, a skew symmetric
-sampling noise would rarely produce (exact binomial
-p of about `{python} f"{r.flip_binomial_p:.2f}"`, before accounting for
-the flips clustering by model and case). Three causes confound, and two runs
+`{python} str(trans["pass_to_fail"])` toward passing — a skew symmetric
+sampling noise would produce with a two-sided exact binomial probability
+of about `{python} f"{r.flip_binomial_p:.2f}"`, and the flips cluster by
+model and case, which weakens even that. Three causes confound, and two runs
 cannot apportion them: sampling nondeterminism in the models, real
 toolchain change — the validator gained typed numeric occurrences and a
 locale profile between the boards
@@ -915,9 +916,10 @@ open at writing) merges. Its committed design:
   reviewer's resolved identity per row (@sec-parity).
 - **Effort as a recorded axis.** Codex arms swept at low, high, and
   ultra; each run records its requested level beside its reasoning-token
-  count as the per-run verification. Claude arms run at their receiver
-  default, disclosed as such (@sec-effort). Effort-mismatched runs refuse
-  to fold.
+  count for post-hoc consistency checks — token counts separate extreme
+  levels, not adjacent ones (@sec-effort). Claude arms run at their
+  receiver default, disclosed as such. Effort-mismatched runs refuse to
+  fold.
 - **Repeated runs per arm on the pinned encoder.** The primary readout is
   the per-arm gate-pass mean with min–max range; the yardsticks of
   @sec-variance govern any comparison claim. Single draws retire.
