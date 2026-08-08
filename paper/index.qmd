@@ -11,9 +11,10 @@ abstract: |
   ship with tests. Sixteen UK provisions, resolved from a signed corpus
   release, supply the tasks; each encoding grades on deterministic gates —
   an artifact exists, it compiles, it passes the repository's validation
-  including the encoding's own companion tests, and it carries no rate,
-  amount, or threshold the source text lacks. A gate pass certifies a
-  mergeable, self-consistent, grounded draft, not legal correctness. Three
+  including the encoding's own companion tests, and its numeric literals —
+  dates and small structural integers exempt — must appear in the source
+  text. A gate pass certifies a mergeable, self-consistent, grounded
+  draft, not legal correctness. Three
   boards to date cover six models. This paper reports the
   boards and, with equal weight, what running them taught about
   measurement: scores moved with the toolchain that produced them, so a
@@ -111,6 +112,14 @@ claude_low_all = r.probe_level("claude", "low")["all"]
 coverages = {s.runner: r.coverage_pct(s.runner) for s in ranked3}
 cov_others_lo = min(v for k, v in coverages.items() if k != "opus-5")
 cov_others_hi = max(v for k, v in coverages.items() if k != "opus-5")
+
+ra = r.repo_augmented_composition
+ra_lo = min(c["n_context_files"] for c in ra.values())
+ra_hi = max(c["n_context_files"] for c in ra.values())
+assert all(
+    {"existing_target", "existing_target_test_context"} <= c["kinds"]
+    for c in ra.values()
+)
 
 v2f = r.v2_fable
 v3f_timeout = r.v3_fable_timeout
@@ -210,9 +219,11 @@ recorded expression date (the consolidation date of the resolved text) per
 provision, `{python} expr_lo` to `{python} expr_hi` across the v3 suite —
 and places it in a cold workspace: the resolved source text and its
 provision metadata, and nothing else. The per-case workspace context
-manifests, frozen in this paper's snapshot with every board row hash-bound
-to its case's manifest, list zero context files for every cold case: no
-existing encoding of the target, no repository context, no stub files. The
+manifests, frozen in this paper's snapshot, list zero context files for
+every cold case: no existing encoding of the target, no repository
+context, no stub files. Every board row that records a workspace binds to
+its case's manifest by hash; the five rows the harness killed before a
+workspace existed carry none. The
 model — throughout this paper, a *runner*: a CLI coding product wrapping a
 model, with its own system prompt, tools, and retry behavior — writes the
 RuleSpec module: the parameters and formulas the provision defines,
@@ -226,7 +237,8 @@ Capability cases run cold for a reason. A workspace with repository
 context includes whatever encoding of the provision already merged, so a
 capability score would come to measure copying, and would drift as the
 repository grows. The last three cases run exactly that way, as oracle
-candidates: their frozen manifests list 2–16 context files each, and every
+candidates: their frozen manifests list
+`{python} str(ra_lo)`–`{python} str(ra_hi)` context files each, and every
 one includes the already-merged encoding of the target provision and its
 tests. Their cells therefore measure work with the merged answer available
 — the risk the cold design exists to avoid — and the board table carries a
@@ -375,18 +387,22 @@ encoding more easily than one that writes strict tests. The grounding scan
 runs one-directional: an invented number fails it, an omitted number
 cannot. (The validator parses the artifact's RuleSpec, extracts the
 numeric literals its rules carry — exempting dates, structural index
-literals, and the small integers −1 through 3 — and matches each against
-the supplied source text's numeric occurrences, word forms included:
+literals, the small integers −1 through 3, and a few other structural
+forms — and matches each against the supplied source text's numeric
+occurrences, word forms included:
 passing taper artifacts carry 0.5 as a grounded literal against source
 text that says "one-half". Each decision records in the run artifact.)
-The omitted-number direction has its own bound: an advisory column tracks
-how much of the source's numerics each encoding covered, and on v3 five of
-the six runners' artifacts covered
-`{python} f"{cov_others_lo:.0f}"`–`{python} f"{cov_others_hi:.0f}"`% of
-their sources' numeric occurrences while opus-5's covered
-`{python} f"{coverages['opus-5']:.1f}"`% — under-encoding is visible, not
-free. A gate pass therefore certifies a mergeable, self-consistent,
-grounded draft — not a legally correct encoding.
+The omitted-number direction has no deterministic bound on these boards,
+and the advisory coverage column does not supply one: its denominator is
+the numeric occurrences of the artifact's own embedded source summary,
+not the supplied text, so a model that omits a number from both its
+encoding and its summary escapes the column entirely. On v3 it read
+`{python} f"{cov_others_lo:.0f}"`–`{python} f"{cov_others_hi:.0f}"`% for
+five runners and `{python} f"{coverages['opus-5']:.1f}"`% for opus-5 — a
+self-consistency reading, not source recall. A source-relative recall
+metric joins the v4 instrument list. A gate pass therefore certifies a
+mergeable, self-consistent, grounded draft — not a legally correct
+encoding, and not a complete one.
 
 Everything else reports alongside as advisory columns. A pinned reviewer
 model scores each encoding's statutory fidelity; one reviewer model scores
@@ -662,8 +678,8 @@ v2 rows — those have a mechanical explanation, the timeout fix of
 `{python} str(trans["fail_to_pass"])` to
 `{python} str(trans["pass_to_fail"])` toward passing, a skew symmetric
 sampling noise would rarely produce (exact binomial
-p ≈ `{python} f"{r.flip_binomial_p:.2f}"`, before accounting for the
-flips clustering by model and case). Three causes confound, and two runs
+p of about `{python} f"{r.flip_binomial_p:.2f}"`, before accounting for
+the flips clustering by model and case). Three causes confound, and two runs
 cannot apportion them: sampling nondeterminism in the models, real
 toolchain change — the validator gained typed numeric occurrences and a
 locale profile between the boards
@@ -905,9 +921,11 @@ open at writing) merges. Its committed design:
 - **Repeated runs per arm on the pinned encoder.** The primary readout is
   the per-arm gate-pass mean with min–max range; the yardsticks of
   @sec-variance govern any comparison claim. Single draws retire.
-- **A scan positive control.** Before the board folds, a seeded canary
-  artifact with a planted ungrounded literal must fail the grounding
-  gate.
+- **A scan positive control, and a real recall metric.** Before the board
+  folds, a seeded canary artifact with a planted ungrounded literal must
+  fail the grounding gate; and a source-relative coverage metric replaces
+  the advisory column whose denominator is the artifact's own summary
+  (@sec-gates).
 - **Every run publishes.** The fold may exclude a run only for
   infrastructure failures of enumerated classes — quota exhaustion,
   authentication, harness crash — and an excluded run's results freeze
