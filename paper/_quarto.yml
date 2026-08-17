@@ -3,23 +3,16 @@ project:
   output-dir: out
 
 format:
-  html:
+  axiom-paper-html:
     toc: true
     toc-depth: 3
-    theme: none
-    notebook-links: false
-    css:
-      - encodebench-tokens.css
-      - encodebench-paper.css
-  pdf:
-    toc: true
     number-sections: true
     notebook-links: false
-    header-includes:
-      - \usepackage{tgpagella}
-      - \usepackage[scaled=0.94]{helvet}
-      - \usepackage[scaled=0.9]{inconsolata}
-      - \setlength{\tabcolsep}{4pt}
+  axiom-paper-pdf:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    notebook-links: false
 
 execute:
   echo: false

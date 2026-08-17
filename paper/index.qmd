@@ -1,7 +1,18 @@
 ---
 title: "EncodeBench"
 subtitle: "Measuring whether language models can write law as code, and what it takes to measure that honestly"
+author:
+  - name: "Max Ghenis"
+    affiliations:
+      - name: "PolicyEngine"
+      - name: "Axiom Foundation"
 date: 2026-08-07
+date-format: iso
+kicker: working paper
+revision: "1"
+status: |
+  Working paper. Boards v1–v3 as posted to axiom-encode#1189; board v4 is
+  pre-registered in § “Board v4, pre-registered.”
 bibliography: references.bib
 jupyter: python3
 abstract: |
@@ -26,21 +37,6 @@ abstract: |
   others took a read-only audit and a receiver probe, both posted in the
   open. Board v4, pre-registered here, runs on a parity encoder built to
   close these gaps, reporting means with spread in place of single draws.
-format:
-  html:
-    toc: true
-    toc-depth: 3
-    author:
-      - name: "Max Ghenis"
-        affiliations:
-          - name: "PolicyEngine"
-          - name: "Axiom Foundation"
-  pdf:
-    toc: true
-    number-sections: true
-    # The default LaTeX template drops structured affiliations, so the PDF
-    # carries them as a title-page footnote instead.
-    author: 'Max Ghenis\thanks{PolicyEngine and Axiom Foundation.}'
 ---
 
 ```{python}
