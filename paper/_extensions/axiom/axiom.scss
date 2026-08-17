@@ -79,6 +79,17 @@ a:focus {
   line-height: 0.98;
 }
 
+.axiom-title-block .subtitle {
+  max-width: 34ch;
+  margin: -0.35rem 0 1rem;
+  color: #404040;
+  font-family: var(--f-serif);
+  font-style: italic;
+  font-size: clamp(1.15rem, 2.4vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.25;
+}
+
 .axiom-authors {
   font-weight: 700;
 }

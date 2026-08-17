@@ -95,9 +95,9 @@ for three of the sixteen cases.
 
 One case gives one model one provision. The harness resolves the
 provision's text from a signed corpus release — every run here pins
-uk-rulespec-2026-07-14, verified against its publishing key, with a
+{{r_corpus_release}}, verified against its publishing key, with a
 recorded expression date (the consolidation date of the resolved text) per
-provision, 2026-04-06 to 2026-07-01 across the v3 suite —
+provision, {{expr_lo}} to {{expr_hi}} across the v3 suite —
 and places it in a cold workspace: the resolved source text and its
 provision metadata, and nothing else. The per-case workspace context
 manifests, frozen in this paper's snapshot, list zero context files for
@@ -119,7 +119,7 @@ context includes whatever encoding of the provision already merged, so a
 capability score would come to measure copying, and would drift as the
 repository grows. The last three cases run exactly that way, as oracle
 candidates: their frozen manifests list
-2–16 context files each, and every
+{{str_ra_lo}}–{{str_ra_hi}} context files each, and every
 one includes the already-merged encoding of the target provision and its
 tests. Their cells therefore measure work with the merged answer available
 — the risk the cold design exists to avoid — and the board table carries a
@@ -128,26 +128,7 @@ PolicyEngine UK comparison path and will carry a live oracle check once
 that plumbing is verified for eval cases; until then they grade on the
 same deterministic gates as everything else.
 
-| # | case | provision | probes | group |
-|---|---|---|---|---|
-| 01 | `vat_standard_rate` | Value Added Tax Act 1994 s. 2 | flat-rate control case | parameters |
-| 02 | `class_2_nic` | SSCBA 1992 s. 13 | voluntary flat-rate contribution — see the labeling note below | parameters |
-| 03 | `class_1_secondary_nic` | SSCBA 1992 s. 9 | employer-side rate and secondary threshold | parameters |
-| 04 | `income_tax_rate_bands` | Income Tax Act 2007 s. 10 | basic, higher, and additional rate bands | bands |
-| 05 | `dividend_nil_rate` | Income Tax Act 2007 s. 13A | band-conditional nil-rate amount | bands |
-| 06 | `personal_allowance_taper` | Income Tax Act 2007 s. 35 | £100,000 half-excess taper with round-up | tapers |
-| 07 | `hicbc_phaseout` | ITEPA 2003 s. 681B | charge liability above the £60,000 threshold — see the labeling note below | tapers |
-| 08 | `pension_annual_allowance` | Finance Act 2004 s. 228 | annual allowance beside the s. 228ZA taper | tapers |
-| 09 | `marriage_allowance_transfer` | Income Tax Act 2007 s. 55B | transferable allowance: elections, both-party conditions | structure |
-| 10 | `income_tax_liability_steps` | Income Tax Act 2007 s. 23 | multi-step liability calculation; import-heavy | structure |
-| 11 | `uc_award_calculation` | Welfare Reform Act 2012 s. 8 | universal credit: maximum amount minus reductions | structure |
-| 12 | `child_benefit_entitlement` | SSCBA 1992 s. 141 | entitlement only — the rates live in a separate instrument | grounding |
-| 13 | `finance_act_2026_charge` | Finance Act 2026 s. 1 | recency probe: a one-sentence charge for 2026–27 | grounding |
-| 14 | `income_tax_main_rates` | Income Tax Act 2007 s. 6 | the main-rate structure (the percentages live in annual finance acts) | oracle path |
-| 15 | `class_1_primary_nic` | SSCBA 1992 s. 8 | employee-side Class 1 contributions | oracle path |
-| 16 | `child_benefit_weekly_rates` | Child Benefit (Rates) Regulations 2006 reg. 2 | the weekly rates case 12 must not invent | oracle path |
-
-: The sixteen cases. Cases 1–13 run cold; cases 14–16 run with repository context as oracle candidates. The provision column derives from the citation path frozen in every run row. SSCBA = Social Security Contributions and Benefits Act; ITEPA = Income Tax (Earnings and Pensions) Act. {tbl-colwidths="[5,30,24,26,15]"}
+{{table:suite}}
 
 Three suite-manifest statements misdescribe the instrument, and the paper
 describes the instrument rather than the statements. The case named
@@ -205,8 +186,8 @@ and the advisory coverage column does not supply one: its denominator is
 the numeric occurrences of the artifact's own embedded source summary,
 not the supplied text, so a model that omits a number from both its
 encoding and its summary escapes the column entirely. On v3 it read
-93–100% for
-five runners and 71.2% for opus-5 — a
+{{cov_others_lo_0f}}–{{cov_others_hi_0f}}% for
+five runners and {{coverages_opus_5_1f}}% for opus-5 — a
 self-consistency reading, not source recall. A source-relative recall
 metric joins the v4 instrument list. A gate pass therefore certifies a
 mergeable, self-consistent, grounded draft — not a legally correct
@@ -220,16 +201,16 @@ the same rig configuration the next day without an independent re-check,
 and the result rows do not record the resolved identity. A single noisy
 judge whose own family competes on the board cannot referee it neutrally,
 so its score sits beside the gates rather than inside them. On board v3
-its mean scores span 7.8 to 8.3 of 10
+its mean scores span {{review_lo}} to {{review_hi}} of 10
 across all six runners (scoring
-15–16 of each
+{{str_review_cov_lo}}–{{str_review_cov_hi}} of each
 runner's cases) — a band too narrow to order the leaders. The oracle column stays empty until the PolicyEngine
 UK runtime path is verified for eval cases. The median-latency and cost
 columns carry measured values.
 
 The roster carries a control: `gpt-5.6-luna`, which prior internal
 measurement found weak at exactly this task. Across the three boards it
-scored 5, 5, 8 of 16 — at or near the bottom every time. A
+scored {{luna_path}} of 16 — at or near the bottom every time. A
 board that failed to separate the control from the leaders would indict
 the instrument, not the models. The control's certification has a scope,
 though: luna rides the codex backend, so it can catch defects on that path
@@ -248,50 +229,16 @@ work.
 
 ## Three boards {#sec-boards}
 
-| board | run | encoder | runners | suite cost |
-|---|---|---|---|---|
-| v1 | 2026-07-23 | `0.2.1333` | 4 | $15.11 |
-| v2 | 2026-07-25 | `0.2.1380` | 6 | $40.25 |
-| v3 | 2026-07-26 | `0.2.1382` | 6 | $52.09 |
-
-: The three boards. Costs are API-equivalents: codex-backend tokens priced at published July 2026 rates; Claude-backend costs are the CLI's own recorded per-call figures. All runs drew on subscription-billed seats.
+{{table:boards}}
 
 Board v1 piloted the suite on four codex-backend models. Boards v2 and v3
 ran the full six-model roster one day apart on successive encoder versions
 — v2 on the encoder that carried the timeout defect of @sec-timeout, v3 on
 the encoder that fixed it. v3 stands as the current board.
 
-| runner | model | gate pass | cold | T | artifacts | compile | ci | grounded | median |
-|---|---|---|---|---|---|---|---|---|---|
-| gpt-5.5 | `gpt-5.5` | **15/16** (93.8%) | 13/13 | — | 16/16 | 100.0% | 93.8% | 100.0% | 48s |
-| sol | `gpt-5.6-sol` | **14/16** (87.5%) | 11/13 | — | 16/16 | 100.0% | 87.5% | 100.0% | 45s |
-| fable | `claude-fable-5` | **12/16** (75.0%) | 10/13 | 1 | 15/16 | 100.0% | 80.0% | 100.0% | 266s |
-| terra | `gpt-5.6-terra` | **11/16** (68.8%) | 8/13 | — | 16/16 | 100.0% | 68.8% | 100.0% | 34s |
-| luna | `gpt-5.6-luna` | **8/16** (50.0%) | 6/13 | — | 15/16 | 93.3% | 53.3% | 100.0% | 50s |
-| opus-5 | `claude-opus-5` | **6/16** (37.5%) | 5/13 | — | 16/16 | 87.5% | 37.5% | 100.0% | 47s |
+{{table:v3}}
 
-: Board v3 — encoder 0.2.1382, run 2026-07-26. The gate-pass column counts cases that clear all four gates; cold subsets the thirteen cold cases (the three oracle-path cases ran with the merged target encoding in-workspace, @sec-task). T counts cases that exhausted the recorded time budget; artifacts counts cases that produced a gradeable artifact; compile, ci (repository validation, companion tests included), and grounded rates cover produced artifacts only; median is case duration. OpenAI-family runners rode the codex path (workspace, tools) and Anthropic-family runners rode the Claude CLI prompt-only, so cross-family comparisons inherit @sec-parity. The advisory reviewer and oracle columns live in the board record. {tbl-colwidths="[9,14,15,8,5,10,10,9,10,10]"}
-
-| case | gpt-5.5 | sol | fable | terra | luna | opus-5 |
-|---|---|---|---|---|---|---|
-| 01 `vat_standard_rate` | P | P | P | P | P | F |
-| 02 `class_2_nic` | P | P | P | P | F | P |
-| 03 `class_1_secondary_nic` | P | P | P | P | E | F |
-| 04 `income_tax_rate_bands` | P | F | P | F | F | F |
-| 05 `dividend_nil_rate` | P | F | P | F | P | F |
-| 06 `personal_allowance_taper` | P | P | F | F | F | F |
-| 07 `hicbc_phaseout` | P | P | P | P | F | P |
-| 08 `pension_annual_allowance` | P | P | F | F | P | P |
-| 09 `marriage_allowance_transfer` | P | P | T | F | F | F |
-| 10 `income_tax_liability_steps` | P | P | P | P | F | F |
-| 11 `uc_award_calculation` | P | P | P | P | P | P |
-| 12 `child_benefit_entitlement` | P | P | P | P | P | P |
-| 13 `finance_act_2026_charge` | P | P | P | P | P | F |
-| 14 `income_tax_main_rates` | P | P | P | P | P | F |
-| 15 `class_1_primary_nic` | F | P | F | P | P | F |
-| 16 `child_benefit_weekly_rates` | P | P | P | P | F | P |
-
-: Board v3 per-case grid. P = gate pass, F = failed a gate (compile, validation, or grounding), T = timeout, E = no artifact. Cross-family column comparisons inherit @sec-parity. {tbl-colwidths="[41,10,10,10,10,10,9]"}
+{{table:grid}}
 
 ![Gate passes per model across the three boards. Panels follow board v3 rank; the y-axis runs 0–16 cases. The boards ran on different encoder versions, so each line connects runs of the suite, not draws from one instrument — and fable and opus-5 rode the Claude CLI prompt-only while the rest rode the codex path with a workspace, so cross-family comparisons inherit @sec-parity. The hollow marker is board v2's fable row, which a 600-second harness ceiling truncated (@sec-timeout) — a floor, not a capability reading. fable and opus-5 joined the published roster at v2; a completed same-toolchain fable run under the v1 encoder was never folded, frozen in this paper's snapshot as excluded (@sec-integrity).](figures/fig-boards.png){#fig-boards}
 
@@ -300,24 +247,24 @@ Three readings of the current board survive the variance analysis of
 weaker evidentiary standard of @sec-parity, flagged in place.
 
 First, the extremes separate. Within the codex backend, gpt-5.5 and sol
-clear 15/16 and 14/16 while the
-control (luna) sits at 8/16; the smallest
-leader-to-tail gap on the board (6 cases)
+clear {{g553_gate_label}} and {{sol3_gate_label}} while the
+control (luna) sits at {{v3_luna_gate_label}}; the smallest
+leader-to-tail gap on the board ({{str_yard_min_gap}} cases)
 exceeds the largest gate-pass delta the rerun produced
-(4 cases), and the separation holds on the
-cold-only subscore. opus-5's 6/16 sits in
+({{str_yard_max_delta}} cases), and the separation holds on the
+cold-only subscore. opus-5's {{v3_opus_5_gate_label}} sits in
 the same tail, and that half of the reading is cross-family: opus-5 sat
 the Claude path's exam — prompt-only, no tools (@sec-parity) — so,
 assuming fewer affordances can only depress a score, read its observed
 score as a floor, pending v4.
 
 Second, the grounding scan flagged nothing. On v3 it checked
-105 numeric literals across
-94 artifacts and flagged
+{{str_r_grounding_totals_v3_literals}} numeric literals across
+{{str_r_grounding_totals_v3_artifacts}} artifacts and flagged
 none; pooled across all three boards — two scan versions, the change
 disclosed in @sec-variance — it checked
-279 literals across
-250 artifacts and still flagged none,
+{{str_grounding_literals}} literals across
+{{str_grounding_artifacts}} artifacts and still flagged none,
 the two grounding-trap cases of @sec-task included. The scan's sensitivity
 is what @sec-gates describes and no more, so the flat claim this supports
 reads: on this suite, the binding check was test validation, not literal
@@ -327,11 +274,11 @@ prove them wrong, not by inventing rates.
 Third, speed and cost split by backend, and family rides the backend
 exactly: every OpenAI-family runner rode codex, every Anthropic-family
 runner rode the Claude CLI, on every board. The codex runners' median
-case ran 34–50 seconds on v3;
-fable's ran 266 seconds and emitted
-458,159 output tokens, putting its suite cost at
-$33.02 against $5.66 for
-sol — 5.8× the cost at a lower
+case ran {{v3_codex_lo}}–{{v3_codex_hi}} seconds on v3;
+fable's ran {{fable3_median_seconds}} seconds and emitted
+{{fable_out_tokens}} output tokens, putting its suite cost at
+{{r_money_fable3_cost}} against {{r_money_sol3_cost}} for
+sol — {{r_fable_cost_multiple_of_sol}}× the cost at a lower
 gate-pass count on this board, though the two figures rest on different
 cost bases, which the annex labels.
 How much of the latency and token split reflects the models and how much
@@ -339,36 +286,27 @@ the harness modes they ran under — an agentic workspace loop for codex,
 prompt-only generation for Claude — is exactly what @sec-parity says v1–v3
 cannot separate.
 
-| runner | input tok | output tok | cache read | cost | per pass | basis |
-|---|---|---|---|---|---|---|
-| luna | 826,676 | 43,734 | 310,528 | $1.12 | $0.14 | rate table |
-| terra | 846,099 | 31,240 | 308,992 | $2.66 | $0.24 | rate table |
-| opus-5 | 36 | 152,826 | 774,613 | $3.85 | $0.64 | CLI-reported |
-| sol | 897,438 | 33,026 | 356,608 | $5.66 | $0.40 | rate table |
-| gpt-5.5 | 898,057 | 37,576 | 344,576 | $5.79 | $0.39 | rate table |
-| fable | 18 | 458,159 | 462,774 | $33.02 | $2.75 | CLI-reported |
-
-: Board v3 cost annex, API-equivalent; rows ordered by suite cost, and per pass = cost per gate pass. Codex-backend rows price recorded tokens at published July 2026 rates, cache reads at 10% of the input rate. The Claude CLI reports its own per-call cost, recorded verbatim; recomputing it from a rate table would mean inventing a rate for claude-opus-5, which has no published price in the reference the harness bundles. The Claude CLI also reports near-zero input tokens in its non-interactive print mode, and we take its recorded cost as pricing the full exchange. {tbl-colwidths="[11,15,15,15,11,13,20]"}
+{{table:cost}}
 
 ## What it takes to measure this honestly
 
 ### Scores bind to the toolchain {#sec-variance}
 
-Between board v2 (encoder 0.2.1380,
-2026-07-25) and board v3
-(0.2.1382, 2026-07-26),
-gate-pass counts moved: gpt-5.5 +4, opus-5 +4, luna +3, fable +3, terra 0, sol -1 —
-five of six models, net +13. At case
+Between board v2 (encoder {{r_encoder_version_v2}},
+{{r_run_date_v2}}) and board v3
+({{r_encoder_version_v3}}, {{r_run_date_v3}}),
+gate-pass counts moved: {{delta_line}} —
+{{moved_word}} of six models, net {{delta_sum}}. At case
 level the movement decomposes into
-15 fail-to-pass flips against
-5 pass-to-fail, plus
-three flips from fable's harness-killed
+{{str_trans_fail_to_pass}} fail-to-pass flips against
+{{str_trans_pass_to_fail}} pass-to-fail, plus
+{{WORDS_trans_kill_to_pass}} flips from fable's harness-killed
 v2 rows — those have a mechanical explanation, the timeout fix of
 @sec-timeout. The remaining flips ran
-15 to
-5 toward passing — a skew symmetric
+{{str_trans_fail_to_pass}} to
+{{str_trans_pass_to_fail}} toward passing — a skew symmetric
 sampling noise would produce with a two-sided exact binomial probability
-of about 0.04, and the flips cluster by
+of about {{r_flip_binomial_p_2f}}, and the flips cluster by
 model and case, which weakens even that. Three causes confound, and two runs
 cannot apportion them: sampling nondeterminism in the models, real
 toolchain change — the validator gained typed numeric occurrences and a
@@ -383,21 +321,21 @@ here and started doing its job.
 Four things follow:
 
 - **A board is one sample.** gpt-5.5 leads v3 at
-  15/16 with sol at 14/16 — one
+  {{g553_gate_label}} with sol at {{sol3_gate_label}} — one
   case apart, and gpt-5.5 itself moved
-  four cases between
+  {{WORDS_sum_r_runner_flips_gpt_5_5_values}} cases between
   boards. The order of ranks one and two is not a finding.
 - **The extremes are findings.** The smallest gap separating the leaders
-  from the tail (6 cases) exceeds every
-  delta the rerun produced (4 cases).
+  from the tail ({{str_yard_min_gap}} cases) exceeds every
+  delta the rerun produced ({{str_yard_max_delta}} cases).
 - **A score is citable only with its encoder version.** This paper writes
   encoder versions next to every number for that reason, and the fold
   mechanically refuses to blend versions.
 - **One non-extreme ranking result reproduced on every board where both
   models have clean rows: terra below sol.** terra — the production
-  default the introduction discloses — scored 9, 11, 11
+  default the introduction discloses — scored {{terra_path}}
   across the boards, the only model whose count did not move between the
-  six-model boards, while sol scored 14, 15, 14. No single
+  six-model boards, while sol scored {{sol_path}}. No single
   board's gap clears the rerun yardstick on its own; the replication
   across all three boards is the finding. The July bake-off this
   benchmark formalizes had read the two as interchangeable on a smaller
@@ -409,29 +347,29 @@ Four things follow:
 Board v2's harness carried a hardcoded 600-second ceiling on the Claude
 encoder path. The codex path exposed configurable timeouts; the Claude
 path hardcoded one constant that nobody had reason to read. fable's median
-case ran 211 seconds on that board against
-the codex runners' 29–57 seconds —
+case ran {{fable2_median_seconds}} seconds on that board against
+the codex runners' {{v2_codex_lo}}–{{v2_codex_hi}} seconds —
 and that median understates fable's true case durations, because the
-harness killed 4 of its 16 cases with no
+harness killed {{str_v2f_killed}} of its 16 cases with no
 artifact and recorded them at zero duration; over the
-12 cases that completed, its median was
-274 seconds. The fold scored each
+{{str_v2f_completed}} cases that completed, its median was
+{{str_v2f_completed_median_s}} seconds. The fold scored each
 absent artifact as a compile and grounding miss. Among the completed
-cases, fable passed 9. The board
+cases, fable passed {{str_v2f_completed_passes}}. The board
 record flagged the row as a floor the day it posted, and this paper does
 not cite it as a capability number anywhere.
 
 The fix made the budgets configurable, recorded, and visible. On v3 the
 recorded policy reads: a uniform
-3,600-second case budget over
+{{timeout_policy_case_budget_s}}-second case budget over
 per-backend invocation budgets — Claude at
-1,800 seconds of wall clock;
-codex at 600 seconds wall
+{{timeout_policy_claude_wall_s}} seconds of wall clock;
+codex at {{str_timeout_policy_codex_short_wall_s}} seconds wall
 with idle detection for short sources and
-1,800 for long ones. The
+{{timeout_policy_codex_long_wall_s}} for long ones. The
 budgets stay backend-shaped rather than identical — one more asymmetry for
 @sec-parity's ledger — but none of them bit a codex runner on v3, whose
-longest case ran 136 seconds. A case
+longest case ran {{str_r_v3_codex_max_seconds}} seconds. A case
 that exhausts its budget now records `timed_out`, renders as T on the
 grid, and drops out of the artifact denominators instead of masquerading
 as a bad encoding. Execution identity carries the whole timeout policy, so
@@ -447,8 +385,8 @@ results.json from the already-produced artifacts with the suite's
 revalidate command; no encoding or gate input changed, and the
 [v2 board record](https://github.com/TheAxiomFoundation/axiom-encode/issues/1189#issuecomment-5080564313)
 discloses which runners. And v3's one timeout — fable's
-marriage_allowance_transfer, which exhausted its
-3,600-second case budget — reads as
+{{v3f_timeout_case}}, which exhausted its
+{{v3f_timeout_seconds}}-second case budget — reads as
 exactly what it is.
 
 ### The effort setting that did nothing {#sec-effort}
@@ -469,32 +407,32 @@ comparison is controlled.
 
 A probe established what each knob does on one task: a nine-seat
 constraint-counting puzzle with a single integer answer,
-5 samples per level on the codex arms and
-3 on the Claude CLI — an *arm* being one
+{{str_probe_n_codex}} samples per level on the codex arms and
+{{str_probe_n_claude}} on the Claude CLI — an *arm* being one
 (runner, effort) condition. (The frozen probe record's own header says
 "N=5 per level"; that holds only for the codex arm — an instrument
 misdescribing itself in a section about instruments misdescribing
 themselves.) On codex, the recognized key moves real resources on this
 probe: gpt-5.6-terra's median reasoning tokens rose from
-145 at low to
-2,756 at xhigh and median wall
-time from 20 to
-53 seconds, though not monotonically —
+{{r_thousands_probe_lo_median}} at low to
+{{r_thousands_probe_xhigh_median}} at xhigh and median wall
+time from {{str_probe_lo_wall_s}} to
+{{str_probe_xhigh_wall_s}} seconds, though not monotonically —
 ultra's token median
-(1,685) fell below high's
-(2,243) while its wall time ran
-longest (106 seconds) with the widest
+({{r_thousands_probe_ultra_median}}) fell below high's
+({{r_thousands_probe_high_median}}) while its wall time ran
+longest ({{str_probe_ultra_wall_s}} seconds) with the widest
 spread
-(401–6,907
+({{min_probe_ultra_all_0f_max_probe_ultra_all_0f}}
 reasoning tokens). On the Claude CLI, `--effort` produced no monotone
-trend at 3 samples per level: claude-opus-5
+trend at {{str_probe_n_claude}} samples per level: claude-opus-5
 returned the identical answer at every level, wall time held at
-11–13
+{{str_r_claude_probe_wall_range_0}}–{{str_r_claude_probe_wall_range_1}}
 seconds, and the cost medians sat at
-$0.030–$0.033
-everywhere except low ($0.051 — elevated
+{{r_money3_claude_other_lo}}–{{r_money3_claude_other_hi}}
+everywhere except low ({{r_money3_claude_low_median}} — elevated
 at three samples, which ranged
-$0.031–$0.227).
+{{r_money3_r_claude_probe_low_samples_0}}–{{r_money3_r_claude_probe_low_samples_1}}).
 Two hypotheses fit that result and this probe cannot separate them: the
 model regulates its own reasoning depth, or the flag is inert in the
 CLI's print mode — the same defect class this section began with. A task
@@ -540,13 +478,13 @@ and records CLI versions per row.
 
 ### Case 04, flagged and retracted {#sec-case04}
 
-All ten model-runs across boards v1
+All {{WORDS_case04_runs_v1_v2}} model-runs across boards v1
 and v2 failed `income_tax_rate_bands` —
-nine as genuine attempts, plus
+{{WORDS_case04_attempts_failed}} as genuine attempts, plus
 fable's v2 row, which the 600-second ceiling killed before it could
 attempt — and the v2 record flagged the case as a suspected suite defect:
-at zero for ten, a broken fixture
-explained the data at least as well as a hard provision. Board v3 answered — gpt-5.5 and fable both
+at zero for {{WORDS_case04_runs_v1_v2}}, a broken fixture
+explained the data at least as well as a hard provision. Board v3 answered — {{case04_passers}} both
 passed it — and we retracted the flag on the tracking issue the day the
 board posted. The failures had measured difficulty, not validity. The
 operating rule the episode set: unanimous failure justifies reading the
@@ -559,17 +497,17 @@ runs they concern are frozen in this paper's snapshot, marked excluded,
 so their numbers derive like every other.
 
 opus-5's first v2 run returned
-1/16 with
-nine cases dying on a session-limit
-error at a median of 0.9 seconds: its
+{{disc_gate_passes_disc_cases}} with
+{{WORDS_disc_limit_errors}} cases dying on a session-limit
+error at a median of {{disc_limit_median_s}} seconds: its
 encoder and its reviewer drew on one subscription account, and the
 account hit its limit. We discarded that run as a measurement failure,
 split the accounts, and re-ran clean — zero quota errors, case durations
-of 10 to
-465 seconds, and the executed model
+of {{str_opus2_dur_min_s}} to
+{{str_opus2_dur_max_s}} seconds, and the executed model
 verified from traces; we published only the clean row. luna's v2
 advisory-review coverage reached
-8 of 16 after the reviewer's
+{{str_r_v2_luna_review_coverage}} of 16 after the reviewer's
 account hit its own limit mid-run; none of the four deterministic gates
 reads the reviewer, so its gate column stood. Both events taught the same
 operating rule: an encoder never shares an account with its own judge.
@@ -578,16 +516,16 @@ And fable ran alongside board v1, not only after it. Its first attempts
 died on harness infrastructure — a malformed MCP configuration that
 killed every Claude call instantly, then CLI authentication — and its
 completed 2026-07-24 run produced
-16 case rows that the finalizer then
+{{str_r_fable_v1_cases}} case rows that the finalizer then
 refused: the nondeterministic-reviewer revalidation defect
 ([#1280](https://github.com/TheAxiomFoundation/axiom-encode/pull/1280))
 later fixed. No results.json exists, so the run could never fold into
 board v1 — whose record had promised fable would join it. It is frozen
 here as excluded, and its rows corroborate @sec-timeout:
-two cases killed at the
-600-second ceiling, a 273-second
-median, and 8 of 16 gate passes
-among 13 artifacts — a floor under
+{{WORDS_r_fable_v1_kills_600s}} cases killed at the
+600-second ceiling, a {{str_r_fable_v1_median_s}}-second
+median, and {{str_r_fable_v1_gate_passes}} of 16 gate passes
+among {{str_r_fable_v1_artifacts}} artifacts — a floor under
 the same ceiling that shaped v2, published as capability neither then nor
 now.
 
@@ -672,7 +610,7 @@ manifest at load. The derivation module re-implements the
 deterministic pieces of the `eval-board` fold, verifies its derived
 headlines against the board records posted to the tracking issue, and
 refuses to render the manuscript on any mismatch; this render passed that
-check (verified against published records: 16 runner gate counts, medians, v3 artifacts/timeouts/costs/coverage, the full probe tables, and the context-manifest binding). A few numbers are harness facts rather than
+check ({{VERIFIED}}). A few numbers are harness facts rather than
 run outputs — the 600-second v2 ceiling appears in the killed rows' own
 error text, while the OpenAI path's 6,000-character and 16,384-token
 constants live in the audited harness source — and the paper cites those

@@ -24,26 +24,30 @@ Outputs:
    the manuscript from the frozen snapshot — it re-implements the
    deterministic pieces of `axiom-encode`'s `eval-board` fold — hash-checks
    every frozen file at load, and `verify()` checks the derived headline
-   numbers against the board records posted to axiom-encode#1189. The
-   manuscript's setup cell calls `verify()`, so a mismatch refuses the
-   render.
-3. **Render.** From the repo root:
+   numbers against the board records posted to axiom-encode#1189.
+3. **Fill.** `paper/fill_paper.py` calls `verify()` first (a mismatch refuses
+   the fill), runs the paper's derivations, and writes the manuscript:
+   `index.qmd.in` is the template — prose plus `{{name}}` placeholders and
+   `{{table:name}}` blocks — and the filled `index.qmd`, `results/values.json`
+   (every number, sorted), and `figures/*.png` are committed. Unfilled
+   placeholders and unconsumed values both fail the fill.
+4. **Render.** No engine — the filled manuscript has no code cells, so any
+   Quarto with a TeX distribution renders both house editions
+   (`axiom-quarto`, vendored under `paper/_extensions/`). From the repo root:
 
    ```bash
-   uv run --project paper python paper/render_paper.py
+   uv run --project paper python paper/render_paper.py   # fill + render + publish
+   quarto render paper                                    # render only, from a clean clone
+   uv run --project paper python paper/fill_paper.py --check   # CI: committed files match the pipeline
    ```
 
-   The renderer pins `QUARTO_PYTHON` to the invoking interpreter, renders
-   HTML and PDF, and copies both into `public/paper/`. Quarto and a TeX
-   distribution must be installed separately; the last known-good render
-   used Quarto 1.9.36, TeX Live 2026, and Python 3.14 via the committed
-   `uv.lock`.
+   The last known-good render used Quarto 1.9.36 and TeX Live 2026.
 
 ## Standing rules
 
 - **Board statistics, probe values, and integrity-note numbers derive.**
-  The prose interpolates `paper_results` accessors; tables and the figure
-  build from the same module. The narrow exception class is harness facts
+  Edit `index.qmd.in` and `paper_results.py`, never `index.qmd`: the
+  pipeline fills every number, table, and figure from the same module. The narrow exception class is harness facts
   the snapshot cannot contain (a hardcoded constant in the audited harness
   source); the manuscript cites those to the audit instead of deriving
   them.

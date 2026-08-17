@@ -1,14 +1,19 @@
-"""Render the EncodeBench paper and publish static assets into the app.
+"""Fill, render, and publish the EncodeBench paper into the app.
 
-Renders ``paper/index.qmd`` to HTML and PDF and copies the outputs into
-``public/paper/`` (``web/`` for the browser edition, ``encodebench.pdf``
-for the download), which Next.js serves at encodebench.org/paper. The
-render pins the Jupyter engine to the invoking interpreter so it always
-executes this checkout's ``paper_results`` against the frozen snapshot.
+Two steps, deliberately separate. ``fill_paper.py`` runs the computation
+(``paper_results`` over the frozen snapshot, ``r.verify()`` first) and writes
+the filled ``paper/index.qmd``, ``results/values.json``, and the figure PNGs.
+Quarto then renders that filled manuscript with NO engine — no kernel, no
+``{python}`` — into the two house editions, and the outputs land in
+``public/paper/`` (``web/`` for the browser edition, ``encodebench.pdf`` for
+the download), which Next.js serves at encodebench.org/paper.
 
 Run from the repo root::
 
     uv run --project paper python paper/render_paper.py
+
+Rendering alone needs only Quarto: ``quarto render paper`` from a clean
+clone reproduces both editions from the committed filled files.
 """
 
 from __future__ import annotations
@@ -63,14 +68,19 @@ def set_public_web_base_href(destination: Path) -> None:
 
 def remove_public_web_extras(destination: Path) -> None:
     """Keep only the manuscript files the app serves."""
-    for filename in [
+    for name in [
         "index-preview.html",
         "index.embed.ipynb",
         "index.out.ipynb",
         "index.qmd",
+        "index.pdf",
+        "_extensions",
+        "_tex",
     ]:
-        path = destination / filename
-        if path.exists():
+        path = destination / name
+        if path.is_dir():
+            shutil.rmtree(path)
+        elif path.exists():
             path.unlink()
 
 
@@ -81,12 +91,6 @@ def main() -> None:
     tex_bin = Path("/Library/TeX/texbin")
     if tex_bin.exists():
         env["PATH"] = f"{tex_bin}:{env.get('PATH', '')}"
-    # Pin the Jupyter engine to the invoking virtualenv so the render always
-    # executes this checkout's paper_results. QUARTO_PYTHON selects the
-    # interpreter; JUPYTER_PREFER_ENV_PATH makes the `python3` kernelspec
-    # resolve inside the venv ahead of any user-level kernelspec.
-    env["QUARTO_PYTHON"] = sys.executable
-    env["JUPYTER_PREFER_ENV_PATH"] = "1"
 
     sys.path.insert(0, str(PAPER_DIR))
     from paper_results import SNAPSHOT_DIR_NAME
@@ -99,26 +103,28 @@ def main() -> None:
             "paper/scripts/freeze_snapshot.py first."
         )
 
-    html_out_dir = PAPER_DIR / "out" / "web"
-    pdf_out_dir = PAPER_DIR / "out" / "pdf"
-    for out_dir in (html_out_dir, pdf_out_dir):
-        if out_dir.exists():
-            shutil.rmtree(out_dir)
+    # Step 1: computation → filled manuscript. Refuses on any headline drift.
+    subprocess.run(
+        [sys.executable, str(PAPER_DIR / "fill_paper.py")],
+        check=True,
+        cwd=ROOT,
+    )
+    filled = (PAPER_DIR / "index.qmd").read_text(encoding="utf-8")
+    for marker in ("```{python}", "`{python}", "{{"):
+        if marker in filled:
+            raise SystemExit(
+                f"filled manuscript still contains {marker!r}; the render "
+                "must not depend on an engine"
+            )
 
-    subprocess.run(
-        [quarto, "render", "index.qmd", "--to", "html",
-         "--output-dir", str(html_out_dir)],
-        check=True,
-        cwd=PAPER_DIR,
-        env=env,
-    )
-    subprocess.run(
-        [quarto, "render", "index.qmd", "--to", "pdf",
-         "--output-dir", str(pdf_out_dir)],
-        check=True,
-        cwd=PAPER_DIR,
-        env=env,
-    )
+    # Step 2: render both house editions with no engine. The project's
+    # _quarto.yml carries the formats; a single render produces both.
+    out_dir = PAPER_DIR / "out"
+    if out_dir.exists():
+        shutil.rmtree(out_dir)
+    subprocess.run([quarto, "render"], check=True, cwd=PAPER_DIR, env=env)
+    html_out_dir = out_dir
+    pdf_out_dir = out_dir
 
     PUBLIC_PAPER_DIR.mkdir(parents=True, exist_ok=True)
     copy_tree(html_out_dir, PUBLIC_WEB_DIR)
