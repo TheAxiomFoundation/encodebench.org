@@ -533,9 +533,12 @@ now.
 
 ## Board v4, pre-registered
 
-Board v4 runs when the parity encoder
-([PR #1304](https://github.com/TheAxiomFoundation/axiom-encode/pull/1304),
-open at writing) merges. Its committed design:
+Board v4 runs when a parity encoder merges. The first attempt,
+[PR #1304](https://github.com/TheAxiomFoundation/axiom-encode/pull/1304),
+closed unmerged on 2026-08-21 after main moved several hundred commits
+beneath it; its replacement, rebuilt on current main, was not yet open at
+this revision, and main still carries the inert effort key and the
+prompt-only Claude path. The committed design carries over:
 
 - **Same sixteen cases, same corpus release, new encoder** — a new board
   by construction, folded by the same contract.
@@ -632,7 +635,7 @@ records live on tracking issue
 [#1189](https://github.com/TheAxiomFoundation/axiom-encode/issues/1189),
 and
 [PR #1304](https://github.com/TheAxiomFoundation/axiom-encode/pull/1304)
-carries the parity encoder. The current board, the suite, and this paper
+holds the parity-encoder design its replacement inherits. The current board, the suite, and this paper
 live at [encodebench.org](https://encodebench.org); the paper's source,
 snapshot, and derivation module live in the
 [site repository](https://github.com/TheAxiomFoundation/encodebench.org)
