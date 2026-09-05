@@ -1,0 +1,23 @@
+project:
+  type: manuscript
+  output-dir: out
+
+format:
+  axiom-paper-html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    notebook-links: false
+  axiom-paper-pdf:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    notebook-links: false
+
+execute:
+  echo: false
+  warning: false
+  message: false
+
+manuscript:
+  article: index.qmd

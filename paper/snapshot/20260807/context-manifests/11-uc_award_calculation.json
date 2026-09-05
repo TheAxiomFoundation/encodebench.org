@@ -1,0 +1,43 @@
+{
+  "citation": "uk/statute/ukpga/2012/5/8",
+  "context_files": [],
+  "mode": "cold",
+  "policy_prefix": "uk",
+  "provision_metadata_file": "provision-metadata.txt",
+  "review_findings_files": [],
+  "source_metadata": {
+    "source_attestation": {
+      "component_rows": [],
+      "corpus_release": "uk-rulespec-2026-07-14",
+      "corpus_release_content_sha256": "0e53dfd3acb628bd942e9c655837a3776c8fd608a62d4520a821c92549827538",
+      "corpus_release_selector_sha256": "cfd3c6bf227dc70965b5cdf673dcbcafc48067f2be2bff988c194e5f95844ced",
+      "corpus_source": "local",
+      "expression_date": "2026-04-06",
+      "generation_input_sha256": "d39d7eaca5dc2e8633508d0e06f7d513647ce29f0159d81e16635626d77c2028",
+      "provision_file": "data/corpus/provisions/uk/statute/2026-06-03-uk-universal-credit.jsonl",
+      "provision_file_sha256": "1c75a537eb60e8e9e6812c9268da32c16f082e29df4359b33576c5962055db2c",
+      "requested_corpus_citation_path": "uk/statute/ukpga/2012/5/8",
+      "resolved_corpus_citation_path": "uk/statute/ukpga/2012/5/8",
+      "resolved_text_sha256": "d39d7eaca5dc2e8633508d0e06f7d513647ce29f0159d81e16635626d77c2028",
+      "row": {
+        "body_sha256": "d39d7eaca5dc2e8633508d0e06f7d513647ce29f0159d81e16635626d77c2028",
+        "citation_path": "uk/statute/ukpga/2012/5/8",
+        "document_class": "statute",
+        "expression_date": "2026-04-06",
+        "jurisdiction": "uk",
+        "line_number": 40,
+        "provision_file": "data/corpus/provisions/uk/statute/2026-06-03-uk-universal-credit.jsonl",
+        "provision_file_sha256": "1c75a537eb60e8e9e6812c9268da32c16f082e29df4359b33576c5962055db2c",
+        "record_id": "9fd78a40-dc76-510f-8f6a-d38b263302d4",
+        "source_as_of": "2026-06-03",
+        "source_path": "sources/uk/statute/2026-06-03-uk-universal-credit/ukpga/2012/5/section-8.xml",
+        "version": "2026-06-03-uk-universal-credit"
+      },
+      "rulespec_root": "/Users/maxghenis/TheAxiomFoundation/ops/model-capability-eval/rig/rulespec-uk/uk",
+      "source_as_of": "2026-06-03",
+      "source_sha256": "d39d7eaca5dc2e8633508d0e06f7d513647ce29f0159d81e16635626d77c2028"
+    }
+  },
+  "source_metadata_file": "source-metadata.json",
+  "source_text_file": "source.txt"
+}

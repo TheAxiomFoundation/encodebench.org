@@ -1,0 +1,344 @@
+{
+  "boards": {
+    "v1": {
+      "corpus_release": "uk-rulespec-2026-07-14",
+      "corpus_release_content_sha256": "0e53dfd3acb628bd942e9c655837a3776c8fd608a62d4520a821c92549827538",
+      "encoder_commit": "3fd8b063983056350725ee2394037c962640f09f",
+      "encoder_version": "0.2.1333",
+      "record_url": "https://github.com/TheAxiomFoundation/axiom-encode/issues/1189#issuecomment-5056359224",
+      "runners": [
+        {
+          "encoder_commit": "3fd8b063983056350725ee2394037c962640f09f",
+          "encoder_version": "0.2.1333",
+          "file": "boards/v1/sol.results.json.gz",
+          "model": "gpt-5.6-sol",
+          "run_started_at": "2026-07-23T03:16:36+00:00",
+          "runner": "sol",
+          "schema": "axiom-encode/eval-suite-results/v5",
+          "sha256_gz": "8c26375b3a253e3a45394292a95a0fcbf095fab0a18f717d37d9f475e67c58c0",
+          "sha256_json": "a218425c63bb78d2121a3a6fb1d74bdbc529970fa38cecfb0b277cb712f427bc"
+        },
+        {
+          "encoder_commit": "3fd8b063983056350725ee2394037c962640f09f",
+          "encoder_version": "0.2.1333",
+          "file": "boards/v1/gpt-5.5.results.json.gz",
+          "model": "gpt-5.5",
+          "run_started_at": "2026-07-23T03:16:36+00:00",
+          "runner": "gpt-5.5",
+          "schema": "axiom-encode/eval-suite-results/v5",
+          "sha256_gz": "ea6f02d93c2861059a7cc17eaca08bbece08270e904989703633b2e9754b4b3e",
+          "sha256_json": "946683fc5257015817755125865acbbb1b1b343bbdff60d6d3328b300fd9d24d"
+        },
+        {
+          "encoder_commit": "3fd8b063983056350725ee2394037c962640f09f",
+          "encoder_version": "0.2.1333",
+          "file": "boards/v1/terra.results.json.gz",
+          "model": "gpt-5.6-terra",
+          "run_started_at": "2026-07-23T03:16:36+00:00",
+          "runner": "terra",
+          "schema": "axiom-encode/eval-suite-results/v5",
+          "sha256_gz": "0dd3852524e6d8999db00e5543751f2b4ced7e3ebb91c52944d64ae529aebb7c",
+          "sha256_json": "007e1214874f8da3d5d09366f1c3ba48b8ce163525da8d2a263ca3f26ffa7a9d"
+        },
+        {
+          "encoder_commit": "3fd8b063983056350725ee2394037c962640f09f",
+          "encoder_version": "0.2.1333",
+          "file": "boards/v1/luna.results.json.gz",
+          "model": "gpt-5.6-luna",
+          "run_started_at": "2026-07-23T03:16:36+00:00",
+          "runner": "luna",
+          "schema": "axiom-encode/eval-suite-results/v5",
+          "sha256_gz": "3d2bd366ac804f56dba159e23b02fa11917ff2b7228302d0fb4a62f03d6e74a1",
+          "sha256_json": "e99be81f9e52a464ffc75b076c462fe493bc3bcde869284928b38c074cafe6bd"
+        }
+      ],
+      "source_runs_dir": "/Users/maxghenis/TheAxiomFoundation/ops/model-capability-eval/rig/runs.v1-3fd8b063"
+    },
+    "v2": {
+      "corpus_release": "uk-rulespec-2026-07-14",
+      "corpus_release_content_sha256": "0e53dfd3acb628bd942e9c655837a3776c8fd608a62d4520a821c92549827538",
+      "encoder_commit": "f60fd29d74661641cf2fc9d1cef2180a110145fa",
+      "encoder_version": "0.2.1380",
+      "record_url": "https://github.com/TheAxiomFoundation/axiom-encode/issues/1189#issuecomment-5080564313",
+      "runners": [
+        {
+          "encoder_commit": "f60fd29d74661641cf2fc9d1cef2180a110145fa",
+          "encoder_version": "0.2.1380",
+          "file": "boards/v2/sol.results.json.gz",
+          "model": "gpt-5.6-sol",
+          "run_started_at": "2026-07-25T15:45:20+00:00",
+          "runner": "sol",
+          "schema": "axiom-encode/eval-suite-results/v5",
+          "sha256_gz": "c2411fe55e285a6964538a71b04469a28aeed9f4c0fdd42cf4890786ae504534",
+          "sha256_json": "23c4b6ab9e5290059249a4b066dabc710d3ab86a11452e3deecca2eb5940fc11"
+        },
+        {
+          "encoder_commit": "f60fd29d74661641cf2fc9d1cef2180a110145fa",
+          "encoder_version": "0.2.1380",
+          "file": "boards/v2/gpt-5.5.results.json.gz",
+          "model": "gpt-5.5",
+          "run_started_at": "2026-07-25T15:45:20+00:00",
+          "runner": "gpt-5.5",
+          "schema": "axiom-encode/eval-suite-results/v5",
+          "sha256_gz": "c6eb7b5282d3d419b0c378194bf1f430af8e46102e1f8cd34904d1b5dfb70d08",
+          "sha256_json": "5aa192bcc148265070ec883eb1f59f3c82c4b3930e3cbdcb950e6e9f8f085130"
+        },
+        {
+          "encoder_commit": "f60fd29d74661641cf2fc9d1cef2180a110145fa",
+          "encoder_version": "0.2.1380",
+          "file": "boards/v2/terra.results.json.gz",
+          "model": "gpt-5.6-terra",
+          "run_started_at": "2026-07-25T15:45:20+00:00",
+          "runner": "terra",
+          "schema": "axiom-encode/eval-suite-results/v5",
+          "sha256_gz": "cdad727c24aeb5c63d77b069bf360527db5420dd8add208384e12c6dde3060ae",
+          "sha256_json": "b014f032d75aec4f8da29182b633efc203f2d2fde005f73714d10786cf83de9c"
+        },
+        {
+          "encoder_commit": "f60fd29d74661641cf2fc9d1cef2180a110145fa",
+          "encoder_version": "0.2.1380",
+          "file": "boards/v2/luna.results.json.gz",
+          "model": "gpt-5.6-luna",
+          "run_started_at": "2026-07-25T15:45:20+00:00",
+          "runner": "luna",
+          "schema": "axiom-encode/eval-suite-results/v5",
+          "sha256_gz": "0166da85a958c01332aaee2fc326822f8b4b022cb8e4603ce2801eed2d925345",
+          "sha256_json": "e54c3a077e7f5cb171651d77f5930ac99634f6a1477f950564b5f7adb926ee13"
+        },
+        {
+          "encoder_commit": "f60fd29d74661641cf2fc9d1cef2180a110145fa",
+          "encoder_version": "0.2.1380",
+          "file": "boards/v2/fable.results.json.gz",
+          "model": "claude-fable-5",
+          "run_started_at": "2026-07-25T15:45:20+00:00",
+          "runner": "fable",
+          "schema": "axiom-encode/eval-suite-results/v5",
+          "sha256_gz": "47173392e743222aecf2e6a8011fb078881735a0138353dec1b588a926230669",
+          "sha256_json": "ea41388d7d884dcef7f204e9c56c07436a58d2c7798e671220d3c0e361423c5e"
+        },
+        {
+          "encoder_commit": "f60fd29d74661641cf2fc9d1cef2180a110145fa",
+          "encoder_version": "0.2.1380",
+          "file": "boards/v2/opus-5.results.json.gz",
+          "model": "claude-opus-5",
+          "run_started_at": "2026-07-25T17:16:46+00:00",
+          "runner": "opus-5",
+          "schema": "axiom-encode/eval-suite-results/v5",
+          "sha256_gz": "aad8e0981ed5e54b2b2a1ca458ee252c364fb893bc0cfc571b16a2aa05921fbb",
+          "sha256_json": "50b611d612f162ad3301483d596ae7043d0d7bbdbcfe51d75be835c8d0b1c4fe"
+        }
+      ],
+      "source_runs_dir": "/Users/maxghenis/TheAxiomFoundation/ops/model-capability-eval/rig/runs.v2-f60fd29d"
+    },
+    "v3": {
+      "corpus_release": "uk-rulespec-2026-07-14",
+      "corpus_release_content_sha256": "0e53dfd3acb628bd942e9c655837a3776c8fd608a62d4520a821c92549827538",
+      "encoder_commit": "c69a51a4a7ff13d61136ce2f67e4a6c6ef5f1128",
+      "encoder_version": "0.2.1382",
+      "record_url": "https://github.com/TheAxiomFoundation/axiom-encode/issues/1189#issuecomment-5082716028",
+      "runners": [
+        {
+          "encoder_commit": "c69a51a4a7ff13d61136ce2f67e4a6c6ef5f1128",
+          "encoder_version": "0.2.1382",
+          "file": "boards/v3/sol.results.json.gz",
+          "model": "gpt-5.6-sol",
+          "run_started_at": "2026-07-26T04:24:17+00:00",
+          "runner": "sol",
+          "schema": "axiom-encode/eval-suite-results/v6",
+          "sha256_gz": "2bbd803cee845ff94a7f2aac0926c01702962f1bf646a172e45d66a015353f96",
+          "sha256_json": "ffc2b07b93a160a5acf793471b7787b4f5aa5f7265cf997763333abc02edf538"
+        },
+        {
+          "encoder_commit": "c69a51a4a7ff13d61136ce2f67e4a6c6ef5f1128",
+          "encoder_version": "0.2.1382",
+          "file": "boards/v3/gpt-5.5.results.json.gz",
+          "model": "gpt-5.5",
+          "run_started_at": "2026-07-26T04:24:17+00:00",
+          "runner": "gpt-5.5",
+          "schema": "axiom-encode/eval-suite-results/v6",
+          "sha256_gz": "fd822dae2ce7e03a976fd404ce87c5845845bc1230eb5067427f11b5f052fc32",
+          "sha256_json": "d898926f503e59bbcad04b1ba2e22a099d631f9aae5de4332d5b9bdf6d735990"
+        },
+        {
+          "encoder_commit": "c69a51a4a7ff13d61136ce2f67e4a6c6ef5f1128",
+          "encoder_version": "0.2.1382",
+          "file": "boards/v3/terra.results.json.gz",
+          "model": "gpt-5.6-terra",
+          "run_started_at": "2026-07-26T04:24:17+00:00",
+          "runner": "terra",
+          "schema": "axiom-encode/eval-suite-results/v6",
+          "sha256_gz": "e6573c2d4465d28fbf98af0d4e22e32439786f1b45b277710d71a84e2f3a05ea",
+          "sha256_json": "f59675b33e70c00ba5b4a10fa4511595b543b92c3485681edf4c89b91279f48f"
+        },
+        {
+          "encoder_commit": "c69a51a4a7ff13d61136ce2f67e4a6c6ef5f1128",
+          "encoder_version": "0.2.1382",
+          "file": "boards/v3/luna.results.json.gz",
+          "model": "gpt-5.6-luna",
+          "run_started_at": "2026-07-26T04:24:17+00:00",
+          "runner": "luna",
+          "schema": "axiom-encode/eval-suite-results/v6",
+          "sha256_gz": "299af10f86d47551f859d9a45e34be2a9f95cd1660d040845ae8724427d856a2",
+          "sha256_json": "a8d1c7b9e62aa906f3b61c08c5cb152746c5ba8e5abfd0ab9ac25a30ee55eb2c"
+        },
+        {
+          "encoder_commit": "c69a51a4a7ff13d61136ce2f67e4a6c6ef5f1128",
+          "encoder_version": "0.2.1382",
+          "file": "boards/v3/fable.results.json.gz",
+          "model": "claude-fable-5",
+          "run_started_at": "2026-07-26T04:24:17+00:00",
+          "runner": "fable",
+          "schema": "axiom-encode/eval-suite-results/v6",
+          "sha256_gz": "17e6310baf0ed999bcc630c54441a90ca9649a7686d9ca5a5c9fe9f187785e87",
+          "sha256_json": "3598274b8ee88e3a43d30d441d92d3008e61d3dc159e2d3d0c821c31da8711a2"
+        },
+        {
+          "encoder_commit": "c69a51a4a7ff13d61136ce2f67e4a6c6ef5f1128",
+          "encoder_version": "0.2.1382",
+          "file": "boards/v3/opus-5.results.json.gz",
+          "model": "claude-opus-5",
+          "run_started_at": "2026-07-26T04:24:17+00:00",
+          "runner": "opus-5",
+          "schema": "axiom-encode/eval-suite-results/v6",
+          "sha256_gz": "794ddc16744931bc1f939f4655adf1c7079e7f79dfc8a667d61691cd0f95e1c4",
+          "sha256_json": "f5bf3abb1e13ec91423ba4b8bdbd024bfcdc85f423e881daf2efa11734410bf1"
+        }
+      ],
+      "source_runs_dir": "/Users/maxghenis/TheAxiomFoundation/ops/model-capability-eval/rig/runs.v3-c69a51a4"
+    }
+  },
+  "context_manifests": {
+    "entries": [
+      {
+        "case_dir": "01-vat_standard_rate",
+        "case_index": 1,
+        "file": "context-manifests/01-vat_standard_rate.json",
+        "sha256": "aca199cae8bdb9baa21d162955ba155ef2606a9585c2ace255cddb496c7dda49"
+      },
+      {
+        "case_dir": "02-class_2_nic",
+        "case_index": 2,
+        "file": "context-manifests/02-class_2_nic.json",
+        "sha256": "c8aea0d1842aab9828ab161562636f1bd453a96196e96b7c0133a3fd759e5f20"
+      },
+      {
+        "case_dir": "03-class_1_secondary_nic",
+        "case_index": 3,
+        "file": "context-manifests/03-class_1_secondary_nic.json",
+        "sha256": "0efd365bda2046935585bd80855aa64b3514a054ef87f2c158f12ae53154108d"
+      },
+      {
+        "case_dir": "04-income_tax_rate_bands",
+        "case_index": 4,
+        "file": "context-manifests/04-income_tax_rate_bands.json",
+        "sha256": "d87a99f4c4cf1f76a03ed373c3af13a5a7f1034af1065d3f750031335356c859"
+      },
+      {
+        "case_dir": "05-dividend_nil_rate",
+        "case_index": 5,
+        "file": "context-manifests/05-dividend_nil_rate.json",
+        "sha256": "92e95dfacf83842829803c69b6e8865a13837bb99d700d250aa69f312e00f911"
+      },
+      {
+        "case_dir": "06-personal_allowance_taper",
+        "case_index": 6,
+        "file": "context-manifests/06-personal_allowance_taper.json",
+        "sha256": "a457101f8102125331228d40f029ae8f6d3cbfa64976897c0bef06cc809c5094"
+      },
+      {
+        "case_dir": "07-hicbc_phaseout",
+        "case_index": 7,
+        "file": "context-manifests/07-hicbc_phaseout.json",
+        "sha256": "5cfcac4c27b7ce352fa21d9f1393031fa98b05ebae7d0234ee8033cd31f16300"
+      },
+      {
+        "case_dir": "08-pension_annual_allowance",
+        "case_index": 8,
+        "file": "context-manifests/08-pension_annual_allowance.json",
+        "sha256": "9edabe3356c04e29f7c9e5a7908dac2cd20ca0985b9ebbd998e18a2858d703b1"
+      },
+      {
+        "case_dir": "09-marriage_allowance_transfer",
+        "case_index": 9,
+        "file": "context-manifests/09-marriage_allowance_transfer.json",
+        "sha256": "c6ab950cde4d5523b8ac527de2c58be436b1ef4dceaacea84b33f68252dead23"
+      },
+      {
+        "case_dir": "10-income_tax_liability_steps",
+        "case_index": 10,
+        "file": "context-manifests/10-income_tax_liability_steps.json",
+        "sha256": "5be39440d605750b393607ccc4fcd2666028a87f94ead86ded6938c6a43632d0"
+      },
+      {
+        "case_dir": "11-uc_award_calculation",
+        "case_index": 11,
+        "file": "context-manifests/11-uc_award_calculation.json",
+        "sha256": "58a381ade410194b2dfd356e61a60edc6df8a977ed70fc0511bced6dbc6ceec6"
+      },
+      {
+        "case_dir": "12-child_benefit_entitlement",
+        "case_index": 12,
+        "file": "context-manifests/12-child_benefit_entitlement.json",
+        "sha256": "b0d255285feb96c4969e4ecebb910a21248306c3368370ae9981664600ce5c13"
+      },
+      {
+        "case_dir": "13-finance_act_2026_charge",
+        "case_index": 13,
+        "file": "context-manifests/13-finance_act_2026_charge.json",
+        "sha256": "9f3890df592c4f6f8b0437c74f6c5b5ae4d1a788b2e92bc13cbbb98b83eff84f"
+      },
+      {
+        "case_dir": "14-income_tax_main_rates",
+        "case_index": 14,
+        "file": "context-manifests/14-income_tax_main_rates.json",
+        "sha256": "84bbb6cd5ef9417fde59fb0661f45a7591760da2db6e69e1e296f30bb97340e5"
+      },
+      {
+        "case_dir": "15-class_1_primary_nic",
+        "case_index": 15,
+        "file": "context-manifests/15-class_1_primary_nic.json",
+        "sha256": "93a2e72ffe1e7b4bb2b92867836235ca6fb2d0a708988a2c16f9a4d8ce0a0431"
+      },
+      {
+        "case_dir": "16-child_benefit_weekly_rates",
+        "case_index": 16,
+        "file": "context-manifests/16-child_benefit_weekly_rates.json",
+        "sha256": "f453f8cfedcaed43847c73f673f704fcb61ef72581d1087ad499df4ddf57457c"
+      }
+    ],
+    "note": "One exemplar per case, from the v3 sol run; every board row binds to its case's exemplar by context_manifest_sha256, which paper_results asserts at load."
+  },
+  "discarded_runs": {
+    "v1-fable-unfinalized": {
+      "discarded": true,
+      "file": "discarded/v1-fable-unfinalized.suite-results.jsonl.gz",
+      "format": "suite-results-jsonl",
+      "reason": "fable's completed 2026-07-24 run on the v1 encoder: all 16 cases ran, but the finalizer refused the run \u2014 the nondeterministic-reviewer revalidation defect PR #1280 later fixed \u2014 so no results.json exists and it could never fold into board v1, whose record had promised it would. Four earlier fable attempts died on harness infrastructure (a malformed MCP config that killed every Claude call, then CLI auth) and produced no substantive rows.",
+      "sha256_gz": "5676c55758e98fe03f2eb37775d97491a847d200c0bfd8e55c60912f2da75c1b",
+      "sha256_json": "3999dfbd91a61b25b1fbfbcfe562503c7147c8d5a61bfefabccb77049ed53a18"
+    },
+    "v2-opus5-quota-poisoned": {
+      "discarded": true,
+      "file": "discarded/v2-opus5-quota-poisoned.results.json.gz",
+      "format": "results-json",
+      "reason": "opus-5's first v2 attempt: its encoder and its reviewer drew on one subscription account, which hit its session limit mid-run. Discarded as a measurement failure and re-run on split accounts; the clean re-run is boards/v2/opus-5.",
+      "sha256_gz": "bb852c5e4d43408c3cd04e23c1245e48faae697f5ad4bcedcc062d83d9174a41",
+      "sha256_json": "05342962eae9f95bcdefd629a69e3f0e09a396340894518d098dd55037194513"
+    }
+  },
+  "effort_probe": {
+    "file": "effort-probe-results.md",
+    "note": "Receiver-behavior probe recorded 2026-07-26: codex model_reasoning_effort sweep on gpt-5.6-terra and claude --effort sweep on claude-opus-5. The file header says N=5 per level; that holds for the codex arm only \u2014 the claude rows carry three samples per level, and the paper derives N per arm from the rows.",
+    "sha256": "4d893b9c2f82a099c96deae480fe5811c5c969fa10690c3b249c9ed87632c1f8"
+  },
+  "schema": "encodebench-paper-snapshot/v1",
+  "snapshot_dir": "20260807",
+  "suite": "EncodeBench UK v1",
+  "suite_manifest": "benchmarks/encodebench_uk_v1.yaml",
+  "suite_manifest_frozen": {
+    "file": "encodebench_uk_v1.yaml",
+    "sha256": "95ede66bb8a9cb80255d5e4b9d05295e5cad382cc1a3d48db32515a22aa9346c",
+    "source_commit": "c69a51a4"
+  },
+  "tracking_issue": "https://github.com/TheAxiomFoundation/axiom-encode/issues/1189"
+}

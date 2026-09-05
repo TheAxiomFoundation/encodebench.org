@@ -1,5 +1,5 @@
 // EncodeBench UK v1 — the suite as pinned in axiom-encode
-// benchmarks/uk_model_capability_v1.yaml (PR #1191). Sixteen cases bound to
+// benchmarks/encodebench_uk_v1.yaml (PR #1191). Sixteen cases bound to
 // the signed corpus release uk-rulespec-2026-07-14. This file mirrors the
 // manifest for display; the manifest is the source of truth — update both
 // together.
@@ -40,7 +40,8 @@ export const STRATA: SuiteStratum[] = [
         name: "class_2_nic",
         provision: "Social Security Contributions and Benefits Act 1992 s. 13",
         corpusPath: "uk/statute/ukpga/1992/4/13",
-        probes: "Weekly flat amount plus a small-profits threshold",
+        probes:
+          "Voluntary flat-rate contribution — the pinned provision resolves to Class 3, not the Class 2 its name says; suite labeling defect, filed upstream",
         mode: "cold",
       },
       {
@@ -92,7 +93,8 @@ export const STRATA: SuiteStratum[] = [
         name: "hicbc_phaseout",
         provision: "Income Tax (Earnings and Pensions) Act 2003 s. 681B",
         corpusPath: "uk/statute/ukpga/2003/1/681B",
-        probes: "High income child benefit charge: £200 per £100 over the threshold",
+        probes:
+          "High income child benefit charge: liability above the £60,000 threshold (the taper formula lives in s. 681C, outside the supplied text)",
         mode: "cold",
       },
       {
@@ -184,7 +186,7 @@ export const STRATA: SuiteStratum[] = [
       {
         index: 16,
         name: "child_benefit_weekly_rates",
-        provision: "Child Benefit (General) Regulations 2006 reg. 2",
+        provision: "Child Benefit (Rates) Regulations 2006 reg. 2",
         corpusPath: "uk/regulation/uksi/2006/965/2",
         probes:
           "The enhanced and other weekly rates — the regulation the entitlement case must not invent",
@@ -210,10 +212,11 @@ export const ROSTER: Runner[] = [
 ];
 
 // Board v3 — the first run whose every runner finalized without operator
-// salvage. Encoder axiom-encode 0.2.1382 (c69a51a4), uniform 1800s
-// per-invocation encoder timeout and 3600s case budget, both recorded in
-// execution identity. Numbers come from `axiom-encode eval-board` over six
-// signed results.json files; nothing here is hand-entered from a summary.
+// salvage. Encoder axiom-encode 0.2.1382 (c69a51a4); a uniform 3600s case
+// budget over recorded per-backend invocation budgets (Claude 1800s wall;
+// codex 600s/1800s by source length with idle detection), all in execution
+// identity. Numbers come from `axiom-encode eval-board` over six recorded
+// results.json files; nothing here is hand-entered from a summary.
 //
 // Scores are toolchain-bound. An earlier run on 0.2.1380 produced different
 // numbers (gpt-5.5 11/16, sol 15/16, fable 9/16, terra 11/16, luna 5/16,
