@@ -271,7 +271,8 @@ class RunnerStats:
         return sum(self.review_scores) / len(self.review_scores)
 
     @property
-    def cost(self) -> float:
+    def cost(self) -> float | None:
+        """API-equivalent suite cost, or None when no honest basis exists."""
         if self.model in RATES:
             rate_in, rate_out = RATES[self.model]
             return (
@@ -281,14 +282,20 @@ class RunnerStats:
             )
         if self.model in CLI_REPORTED_MODELS:
             return self.cli_reported_cost
-        raise ValueError(f"No cost basis for {self.model}")
+        return None
 
     @property
     def cost_basis(self) -> str:
-        return "rate table" if self.model in RATES else "CLI-reported"
+        if self.model in RATES:
+            return "rate table"
+        if self.model in CLI_REPORTED_MODELS:
+            return "CLI-reported"
+        return "no published rate"
 
     @property
-    def cost_per_pass(self) -> float:
+    def cost_per_pass(self) -> float | None:
+        if self.cost is None or not self.gate_passes:
+            return None
         return self.cost / self.gate_passes
 
 
@@ -472,7 +479,26 @@ class PaperResults:
         )
 
     def total_cost(self, board: str) -> float:
-        return sum(s.cost for s in self.stats[board].values())
+        """Suite cost over the runners that have a cost basis."""
+        return sum(
+            s.cost for s in self.stats[board].values() if s.cost is not None
+        )
+
+    def unpriced_runners(self, board: str) -> list[str]:
+        return [s.runner for s in self.ranked(board) if s.cost is None]
+
+    @cached_property
+    def shared_runners(self) -> list[str]:
+        """Runners present on both full-roster boards, in v3 rank order."""
+        return [s.runner for s in self.ranked("v3") if s.runner in self.stats["v2"]]
+
+    def added_runners(self, board: str = "v3") -> list[dict]:
+        """Runners folded into a board after its record posted (manifest)."""
+        return [
+            entry
+            for entry in self.board_meta(board)["runners"]
+            if entry.get("added_after_record")
+        ]
 
     @cached_property
     def backends_used(self) -> set[str]:
@@ -538,7 +564,7 @@ class PaperResults:
         return {
             runner: self.stats["v3"][runner].gate_passes
             - self.stats["v2"][runner].gate_passes
-            for runner in self.stats["v3"]
+            for runner in self.shared_runners
         }
 
     @cached_property
@@ -551,7 +577,7 @@ class PaperResults:
         sampling noise or validator change.
         """
         counts = {"fail_to_pass": 0, "pass_to_fail": 0, "kill_to_pass": 0}
-        for runner in self.stats["v3"]:
+        for runner in self.shared_runners:
             v2_rows = {
                 r["eval_case"]["index"]: r
                 for r in self.boards["v2"][runner]["results"]

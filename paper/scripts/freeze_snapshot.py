@@ -56,8 +56,29 @@ BOARDS: dict[str, tuple[str, tuple[str, ...]]] = {
     ),
     "v3": (
         "runs.v3-c69a51a4",
-        ("sol", "gpt-5.5", "terra", "luna", "fable", "opus-5"),
+        ("sol", "gpt-5.5", "terra", "luna", "fable", "opus-5", "spark"),
     ),
+}
+
+# Runners folded into a board after its record posted. The boards fold under
+# the comparability contract (same toolchain identity), but the CLI versions
+# the harness does not record moved in the meantime; both facts travel with
+# the row so the paper can disclose them as operator-recorded environment
+# facts rather than derivations.
+RUNNER_NOTES = {
+    ("v3", "spark"): {
+        "added_after_record": "2026-09-05",
+        "codex_cli_version_at_launch": "0.153.3",
+        "claude_cli_version_at_launch": "2.1.260",
+        "note": (
+            "Seventh v3 runner, launched 2026-09-05 on the v3-pinned rig "
+            "(encoder c69a51a4, engine e5e40d4, rulespec-uk f2e69b9, the "
+            "same release object re-materialized from R2) after the board "
+            "record posted; folds under the contract. gpt-5.3-codex-spark "
+            "has no published per-token rate, so its cost columns are "
+            "blank rather than estimated."
+        ),
+    },
 }
 
 # Runs that never published: frozen so the paper's integrity notes derive
@@ -140,7 +161,7 @@ def freeze_results(board: str, runs_dir: Path, runner: str) -> dict:
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_bytes(stored)
 
-    return {
+    entry = {
         "runner": runner,
         "model": payload["results"][0]["model"],
         "file": dest_rel,
@@ -151,6 +172,8 @@ def freeze_results(board: str, runs_dir: Path, runner: str) -> dict:
         "encoder_version": identity["version"],
         "run_started_at": payload["evidence"]["run"]["started_at"],
     }
+    entry.update(RUNNER_NOTES.get((board, runner), {}))
+    return entry
 
 
 def main() -> None:

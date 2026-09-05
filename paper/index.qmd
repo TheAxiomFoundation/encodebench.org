@@ -261,6 +261,7 @@ ran the full six-model roster one day apart on successive encoder versions
 — v2 on the encoder that carried the timeout defect of @sec-timeout, v3 on
 the encoder that fixed it. v3 stands as the current board.
 
+
 | runner | model | gate pass | cold | T | artifacts | compile | ci | grounded | median |
 |---|---|---|---|---|---|---|---|---|---|
 | gpt-5.5 | `gpt-5.5` | **15/16** (93.8%) | 13/13 | — | 16/16 | 100.0% | 93.8% | 100.0% | 48s |
@@ -291,7 +292,7 @@ the encoder that fixed it. v3 stands as the current board.
 | 15 `class_1_primary_nic` | F | P | F | P | P | F |
 | 16 `child_benefit_weekly_rates` | P | P | P | P | F | P |
 
-: Board v3 per-case grid. P = gate pass, F = failed a gate (compile, validation, or grounding), T = timeout, E = no artifact. Cross-family column comparisons inherit @sec-parity. {tbl-colwidths="[41,10,10,10,10,10,9]"}
+: Board v3 per-case grid. P = gate pass, F = failed a gate (compile, validation, or grounding), T = timeout, E = no artifact. Cross-family column comparisons inherit @sec-parity. {tbl-colwidths="[46,9,9,9,9,9,9]"}
 
 ![Gate passes per model across the three boards. Panels follow board v3 rank; the y-axis runs 0–16 cases. The boards ran on different encoder versions, so each line connects runs of the suite, not draws from one instrument — and fable and opus-5 rode the Claude CLI prompt-only while the rest rode the codex path with a workspace, so cross-family comparisons inherit @sec-parity. The hollow marker is board v2's fable row, which a 600-second harness ceiling truncated (@sec-timeout) — a floor, not a capability reading. fable and opus-5 joined the published roster at v2; a completed same-toolchain fable run under the v1 encoder was never folded, frozen in this paper's snapshot as excluded (@sec-integrity).](figures/fig-boards.png){#fig-boards}
 
@@ -357,8 +358,9 @@ cannot separate.
 Between board v2 (encoder 0.2.1380,
 2026-07-25) and board v3
 (0.2.1382, 2026-07-26),
-gate-pass counts moved: gpt-5.5 +4, opus-5 +4, luna +3, fable +3, terra 0, sol -1 —
-five of six models, net +13. At case
+gate-pass counts moved: gpt-5.5 +4, opus-5 +4, fable +3, luna +3, terra 0, sol -1 —
+five of the six models on both boards, net
++13. At case
 level the movement decomposes into
 15 fail-to-pass flips against
 5 pass-to-fail, plus
@@ -397,7 +399,7 @@ Four things follow:
   models have clean rows: terra below sol.** terra — the production
   default the introduction discloses — scored 9, 11, 11
   across the boards, the only model whose count did not move between the
-  six-model boards, while sol scored 14, 15, 14. No single
+  full-roster boards, while sol scored 14, 15, 14. No single
   board's gap clears the rerun yardstick on its own; the replication
   across all three boards is the finding. The July bake-off this
   benchmark formalizes had read the two as interchangeable on a smaller
@@ -439,7 +441,7 @@ runs under different budgets refuse to fold, the same way runs from
 different encoders do.
 
 Board v3 exercised the rebuilt timeout-and-finalization machinery on real
-artifacts: all six runners completed the harness's finalize step with no
+artifacts: all six July runners completed the harness's finalize step with no
 operator recovery. On v2, two of six runners had needed it — the output of
 failed compiles embedded staging-directory paths, which differ per run,
 and the finalizer refused the mismatch. Recovery re-derived their

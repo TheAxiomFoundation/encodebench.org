@@ -110,7 +110,7 @@ function Board() {
           </span>
         </div>
         <p className="mt-3 max-w-2xl text-[0.95rem] text-[var(--color-ink-secondary)]">
-          16 cases, six models, every run bound to the signed corpus release{" "}
+          16 cases, {BOARD.length} models, every run bound to the signed corpus release{" "}
           <span className="mono text-[0.85rem]">{CORPUS_RELEASE}</span>. Headline
           is the deterministic gate: the encode succeeds, the RuleSpec compiles,
           its companion tests pass, and no numeric literal is ungrounded.

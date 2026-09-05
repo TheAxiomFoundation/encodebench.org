@@ -25,7 +25,7 @@ abstract: |
   dates and small structural integers exempt — must appear in the source
   text. A gate pass certifies a mergeable, self-consistent, grounded
   draft, not legal correctness. Three
-  boards to date cover six models. This paper reports the
+  boards to date cover {{n_models_word}} models. This paper reports the
   boards and, with equal weight, what running them taught about
   measurement: scores moved with the toolchain that produced them, so a
   score is citable only against its encoder version; a hardcoded timeout
@@ -202,7 +202,7 @@ and the result rows do not record the resolved identity. A single noisy
 judge whose own family competes on the board cannot referee it neutrally,
 so its score sits beside the gates rather than inside them. On board v3
 its mean scores span {{review_lo}} to {{review_hi}} of 10
-across all six runners (scoring
+across all {{n_v3_word}} runners (scoring
 {{str_review_cov_lo}}–{{str_review_cov_hi}} of each
 runner's cases) — a band too narrow to order the leaders. The oracle column stays empty until the PolicyEngine
 UK runtime path is verified for eval cases. The median-latency and cost
@@ -235,6 +235,7 @@ Board v1 piloted the suite on four codex-backend models. Boards v2 and v3
 ran the full six-model roster one day apart on successive encoder versions
 — v2 on the encoder that carried the timeout defect of @sec-timeout, v3 on
 the encoder that fixed it. v3 stands as the current board.
+{{v3_addendum}}
 
 {{table:v3}}
 
@@ -296,7 +297,8 @@ Between board v2 (encoder {{r_encoder_version_v2}},
 {{r_run_date_v2}}) and board v3
 ({{r_encoder_version_v3}}, {{r_run_date_v3}}),
 gate-pass counts moved: {{delta_line}} —
-{{moved_word}} of six models, net {{delta_sum}}. At case
+{{moved_word}} of the {{n_shared_word}} models on both boards, net
+{{delta_sum}}. At case
 level the movement decomposes into
 {{str_trans_fail_to_pass}} fail-to-pass flips against
 {{str_trans_pass_to_fail}} pass-to-fail, plus
@@ -335,7 +337,7 @@ Four things follow:
   models have clean rows: terra below sol.** terra — the production
   default the introduction discloses — scored {{terra_path}}
   across the boards, the only model whose count did not move between the
-  six-model boards, while sol scored {{sol_path}}. No single
+  full-roster boards, while sol scored {{sol_path}}. No single
   board's gap clears the rerun yardstick on its own; the replication
   across all three boards is the finding. The July bake-off this
   benchmark formalizes had read the two as interchangeable on a smaller
@@ -377,7 +379,7 @@ runs under different budgets refuse to fold, the same way runs from
 different encoders do.
 
 Board v3 exercised the rebuilt timeout-and-finalization machinery on real
-artifacts: all six runners completed the harness's finalize step with no
+artifacts: all {{n_shared_word}} July runners completed the harness's finalize step with no
 operator recovery. On v2, two of six runners had needed it — the output of
 failed compiles embedded staging-directory paths, which differ per run,
 and the finalizer refused the mismatch. Recovery re-derived their

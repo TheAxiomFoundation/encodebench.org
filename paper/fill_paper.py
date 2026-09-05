@@ -49,6 +49,10 @@ PLACEHOLDER = re.compile(r"\{\{(table:)?([A-Za-z_][A-Za-z0-9_.\[\]'\"-]*)\}\}")
 # Generated from the manuscript's inline `{python}` expressions; edit here,
 # not by hand in index.qmd. Keys are placeholder names in index.qmd.in.
 INLINE = {
+    "n_models_word": "n_models_word",
+    "n_v3_word": "n_v3_word",
+    "n_shared_word": "n_shared_word",
+    "v3_addendum": "v3_addendum",
     'r_corpus_release': 'r.corpus_release',
     'expr_lo': 'expr_lo',
     'expr_hi': 'expr_hi',
@@ -242,6 +246,46 @@ def compute() -> tuple[dict[str, str], dict[str, str]]:
 
     fable_out_tokens = f"{fable3.output_tokens:,}"
 
+    # Roster sizes derive: distinct models across boards, runners on v3, and
+    # the runners the two full-roster boards share (the delta analysis).
+    all_models = {
+        s.model for board in BOARD_ORDER for s in r.stats[board].values()
+    }
+    n_models_word = _WORDS[len(all_models)]
+    n_v3_word = _WORDS[len(ranked3)]
+    n_shared_word = _WORDS[len(r.shared_runners)]
+
+    # Runners folded into v3 after its record posted carry operator-recorded
+    # environment facts (CLI versions the rows do not record); the paper
+    # discloses them in one sentence per runner, or nothing.
+    addendum_parts = []
+    for entry in r.added_runners("v3"):
+        st = v3[entry["runner"]]
+        addendum_parts.append(
+            f"{entry['runner']} (`{entry['model']}`) joined the v3 board on "
+            f"{entry['added_after_record']}, after the board record posted: "
+            "the rig re-materialized the same release object and ran the "
+            "same encoder, engine, and RuleSpec commits, so the row folds "
+            "under the contract, but the CLIs the harness does not record "
+            f"had moved (codex {entry['codex_cli_version_at_launch']} and "
+            f"Claude Code {entry['claude_cli_version_at_launch']} at launch, "
+            "against the July board's 0.144 and 2.1.218) — a known "
+            "unrecorded comparability input (@sec-parity). It scored "
+            f"{st.gate_label} ({r.cold_gate_passes(entry['runner'])}/13 cold)."
+        )
+    v3_addendum = " ".join(addendum_parts)
+
+    unpriced = r.unpriced_runners("v3")
+    unpriced_caption = (
+        " "
+        + ", ".join(v3[u].model for u in unpriced)
+        + " has no published per-token rate and the codex CLI reports no "
+        "cost, so its cost cells stay blank rather than estimated."
+    ) if unpriced else ""
+    priced_only_caption = (
+        " Suite costs cover the priced runners only." if unpriced else ""
+    )
+
     def table(
         headers: list[str],
         rows: list[list[str]],
@@ -361,7 +405,7 @@ def compute() -> tuple[dict[str, str], dict[str, str]]:
         "The three boards. Costs are API-equivalents: codex-backend tokens "
         "priced at published July 2026 rates; Claude-backend costs are the "
         "CLI's own recorded per-call figures. All runs drew on "
-        "subscription-billed seats.",
+        "subscription-billed seats." + priced_only_caption,
     )
 
     tables["v3"] = table(
@@ -409,7 +453,7 @@ def compute() -> tuple[dict[str, str], dict[str, str]]:
         "Board v3 per-case grid. P = gate pass, F = failed a gate (compile, "
         "validation, or grounding), T = timeout, E = no artifact. "
         "Cross-family column comparisons inherit @sec-parity.",
-        colwidths=[41, 10, 10, 10, 10, 10, 9],
+        colwidths=[100 - 9 * len(runner_order)] + [9] * len(runner_order),
     )
 
     tables["cost"] = table(
@@ -421,11 +465,14 @@ def compute() -> tuple[dict[str, str], dict[str, str]]:
                 f"{s.input_tokens:,}",
                 f"{s.output_tokens:,}",
                 f"{s.cache_read_tokens:,}",
-                r.money(s.cost),
-                r.money(s.cost_per_pass),
+                r.money(s.cost) if s.cost is not None else "—",
+                r.money(s.cost_per_pass) if s.cost_per_pass is not None else "—",
                 s.cost_basis,
             ]
-            for s in sorted(ranked3, key=lambda s: s.cost)
+            for s in sorted(
+                ranked3,
+                key=lambda s: (s.cost is None, s.cost if s.cost is not None else 0.0),
+            )
         ],
         "Board v3 cost annex, API-equivalent; rows ordered by suite cost, "
         "and per pass = cost per gate pass. Codex-backend rows price "
@@ -435,7 +482,8 @@ def compute() -> tuple[dict[str, str], dict[str, str]]:
         "inventing a rate for claude-opus-5, which has no published price "
         "in the reference the harness bundles. The Claude CLI also reports "
         "near-zero input tokens in its non-interactive print mode, and we "
-        "take its recorded cost as pricing the full exchange.",
+        "take its recorded cost as pricing the full exchange."
+        + unpriced_caption,
         colwidths=[11, 15, 15, 15, 11, 13, 20],
     )
 
@@ -474,8 +522,16 @@ def _write_figure(r, BOARD_ORDER, ranked3) -> None:
     INK = "#1c1917"
     RULE = "#e7e5e4"
 
-    fig, axes = plt.subplots(2, 3, figsize=(6.8, 3.6), sharey=True, sharex=True)
+    import math
+
+    ncols = 3
+    nrows = max(2, math.ceil(len(ranked3) / ncols))
+    fig, axes = plt.subplots(
+        nrows, ncols, figsize=(6.8, 1.8 * nrows), sharey=True, sharex=True
+    )
     x_positions = {b: i for i, b in enumerate(BOARD_ORDER)}
+    for ax in list(axes.flat)[len(ranked3):]:
+        ax.set_visible(False)
 
     for ax, s in zip(axes.flat, ranked3):
         passes = r.gate_by_board[s.runner]
@@ -511,8 +567,8 @@ def _write_figure(r, BOARD_ORDER, ranked3) -> None:
             ax.spines[spine].set_visible(False)
         ax.spines["bottom"].set_color(RULE)
 
-    axes[0][0].set_ylabel("gate passes", fontsize=8.5)
-    axes[1][0].set_ylabel("gate passes", fontsize=8.5)
+    for row in axes:
+        row[0].set_ylabel("gate passes", fontsize=8.5)
     fig.tight_layout(pad=0.8)
     FIGURES.mkdir(parents=True, exist_ok=True)
     fig.savefig(
