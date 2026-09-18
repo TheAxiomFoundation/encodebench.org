@@ -1,0 +1,43 @@
+{
+  "citation": "uk/statute/ukpga/2003/1/681B",
+  "context_files": [],
+  "mode": "cold",
+  "policy_prefix": "uk",
+  "provision_metadata_file": "provision-metadata.txt",
+  "review_findings_files": [],
+  "source_metadata": {
+    "source_attestation": {
+      "component_rows": [],
+      "corpus_release": "uk-rulespec-2026-07-14",
+      "corpus_release_content_sha256": "0e53dfd3acb628bd942e9c655837a3776c8fd608a62d4520a821c92549827538",
+      "corpus_release_selector_sha256": "cfd3c6bf227dc70965b5cdf673dcbcafc48067f2be2bff988c194e5f95844ced",
+      "corpus_source": "local",
+      "expression_date": "2026-04-06",
+      "generation_input_sha256": "cbd6460003ceb72d100afd898510e9c733099d466e51763f734a7a7b85a312fa",
+      "provision_file": "data/corpus/provisions/uk/statute/2026-07-10-uk-rulespec-source-promotion.jsonl",
+      "provision_file_sha256": "b2cd6c0cb00b39b8f1ff2ed2ebf72987dbd15ff4d229e6acf0c3b2bdd7da0cf3",
+      "requested_corpus_citation_path": "uk/statute/ukpga/2003/1/681B",
+      "resolved_corpus_citation_path": "uk/statute/ukpga/2003/1/681B",
+      "resolved_text_sha256": "cbd6460003ceb72d100afd898510e9c733099d466e51763f734a7a7b85a312fa",
+      "row": {
+        "body_sha256": "cbd6460003ceb72d100afd898510e9c733099d466e51763f734a7a7b85a312fa",
+        "citation_path": "uk/statute/ukpga/2003/1/681B",
+        "document_class": "statute",
+        "expression_date": "2026-04-06",
+        "jurisdiction": "uk",
+        "line_number": 40,
+        "provision_file": "data/corpus/provisions/uk/statute/2026-07-10-uk-rulespec-source-promotion.jsonl",
+        "provision_file_sha256": "b2cd6c0cb00b39b8f1ff2ed2ebf72987dbd15ff4d229e6acf0c3b2bdd7da0cf3",
+        "record_id": "194b732b-2d5e-5f33-b114-bb0e6af98ae2",
+        "source_as_of": "2026-07-05",
+        "source_path": "sources/uk/statute/2026-07-10-uk-rulespec-source-promotion/axiom-corpus/provision-records/165d2efc9abc.jsonl",
+        "version": "2026-07-10-uk-rulespec-source-promotion"
+      },
+      "rulespec_root": "/Users/maxghenis/TheAxiomFoundation/ops/model-capability-eval/rig/rulespec-uk/uk",
+      "source_as_of": "2026-07-05",
+      "source_sha256": "cbd6460003ceb72d100afd898510e9c733099d466e51763f734a7a7b85a312fa"
+    }
+  },
+  "source_metadata_file": "source-metadata.json",
+  "source_text_file": "source.txt"
+}

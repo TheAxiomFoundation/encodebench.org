@@ -44,6 +44,9 @@ function Nav() {
         <a className="link-quiet" href="#methodology">
           methodology
         </a>
+        <a className="link-quiet" href="/paper">
+          paper
+        </a>
         <a
           className="link-quiet"
           href={GITHUB_ENCODE}
@@ -107,7 +110,7 @@ function Board() {
           </span>
         </div>
         <p className="mt-3 max-w-2xl text-[0.95rem] text-[var(--color-ink-secondary)]">
-          16 cases, six models, every run bound to the signed corpus release{" "}
+          16 cases, {BOARD.length} models, every run bound to the signed corpus release{" "}
           <span className="mono text-[0.85rem]">{CORPUS_RELEASE}</span>. Headline
           is the deterministic gate: the encode succeeds, the RuleSpec compiles,
           its companion tests pass, and no numeric literal is ungrounded.
@@ -157,7 +160,7 @@ function Board() {
           </table>
         </div>
         <p className="mt-5 text-sm text-[var(--color-ink-muted)]">
-          Every number here came out of a signed{" "}
+          Every number here came out of the run&rsquo;s recorded{" "}
           <span className="mono text-[0.8rem]">results.json</span> through the
           fold — none is hand-entered. A <span className="mono">T</span> is a
           case that hit the harness time ceiling, not a model that failed:
@@ -177,7 +180,12 @@ function Board() {
           same exam: the Codex runners could read workspace files while the
           Anthropic runners ran prompt-only. Cross-family rows here should be
           read loosely. The next run fixes both — explicit recorded effort and
-          an identical prompt-only exam for every backend.
+          an identical prompt-only exam for every backend. The{" "}
+          <a className="link-accent" href="/paper">
+            paper
+          </a>{" "}
+          carries the full account, every number derived from the frozen run
+          artifacts.
         </p>
       </div>
     </section>
@@ -188,7 +196,7 @@ const GATES = [
   {
     name: "encode",
     detail:
-      "The model receives one provision's text, resolved from a signed corpus release, in a cold workspace: the source, stubs for defined terms, and no existing encoding of the target. It writes the RuleSpec module.",
+      "The model receives one provision's text, resolved from a signed corpus release, in a cold workspace: the resolved source text and its metadata, and no existing encoding of the target. It writes the RuleSpec module.",
   },
   {
     name: "compile",
@@ -325,7 +333,7 @@ const METHODOLOGY = [
   {
     title: "Every run carries its provenance",
     detail:
-      "Each run binds the exact corpus release (Ed25519-verified), the encoder and rules-engine versions, and the repository and waiver state that graded it, with signed result evidence. A cell on the board traces to precisely what produced it.",
+      "Each run binds the exact corpus release (Ed25519-verified), the encoder and rules-engine versions, and the repository and waiver state that graded it, with hash-attested result evidence. A cell on the board traces to precisely what produced it.",
   },
 ];
 
@@ -380,7 +388,7 @@ function SiteFooter() {
     <footer className="border-t border-[var(--color-rule)] py-12">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-6 px-6">
         <a
-          href="https://axiom-foundation.org"
+          href="https://axiom.org"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3"

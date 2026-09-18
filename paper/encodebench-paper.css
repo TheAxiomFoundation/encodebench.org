@@ -1,0 +1,320 @@
+/* EncodeBench paper — web manuscript theme on the Axiom statute-paper
+   tokens. Targets the structure Quarto's manuscript format emits:
+   header#title-block-header, nav#TOC, then the article content. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0 auto;
+  max-width: 1180px;
+  padding: 3rem 1.5rem 6rem;
+  display: grid;
+  grid-template-columns: minmax(0, 720px) minmax(230px, 300px);
+  column-gap: 4rem;
+  align-items: start;
+  font-family: var(--f-body);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  position: relative;
+}
+
+/* Paper grain, as on the site. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.85;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.11  0 0 0 0 0.10  0 0 0 0 0.09  0 0 0 0.085 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+body > * {
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+
+body > :not(nav#TOC) {
+  grid-column: 1;
+}
+
+/* ── Title block ── */
+
+header#title-block-header {
+  grid-column: 1 / -1;
+  margin: 0 0 3rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--color-rule-strong);
+}
+
+header#title-block-header .title {
+  margin: 0;
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  font-weight: 650;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+header#title-block-header .subtitle {
+  margin: 1rem 0 0;
+  max-width: 46rem;
+  font-family: var(--f-serif);
+  font-style: italic;
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
+  line-height: 1.5;
+  color: var(--color-ink-secondary);
+}
+
+header#title-block-header .author,
+header#title-block-header .date,
+header#title-block-header .quarto-title-meta {
+  font-size: 0.85rem;
+  color: var(--color-ink-secondary);
+}
+
+header#title-block-header .quarto-title-meta-heading {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+/* ── Table of contents ── */
+
+nav#TOC {
+  grid-column: 2;
+  grid-row: 2 / span 999;
+  position: sticky;
+  top: 2rem;
+  margin: 0;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--color-rule);
+  border-radius: 8px;
+  background: var(--color-paper-elevated);
+  font-size: 0.85rem;
+}
+
+nav#TOC h2 {
+  margin: 0 0 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  border: none;
+  padding: 0;
+}
+
+nav#TOC ul {
+  margin: 0;
+  padding-left: 1rem;
+  list-style: none;
+}
+
+nav#TOC li + li {
+  margin-top: 0.35rem;
+}
+
+nav#TOC a {
+  color: var(--color-ink-secondary);
+  text-decoration: none;
+}
+
+nav#TOC a:hover,
+nav#TOC a.active {
+  color: var(--color-accent);
+}
+
+/* ── Headings and prose ── */
+
+h2,
+h3,
+h4 {
+  margin: 2.75rem 0 0.9rem;
+  scroll-margin-top: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: 1.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--color-rule);
+}
+
+h3 {
+  font-size: 1.2rem;
+}
+
+h4 {
+  font-size: 1.02rem;
+}
+
+p {
+  margin: 0 0 1.1rem;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(146, 64, 14, 0.3);
+}
+
+a:hover {
+  color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+nav#TOC a,
+header#title-block-header a {
+  border-bottom: none;
+}
+
+strong {
+  font-weight: 600;
+}
+
+ul,
+ol {
+  margin: 0 0 1.1rem;
+  padding-left: 1.4rem;
+}
+
+li + li {
+  margin-top: 0.35rem;
+}
+
+blockquote {
+  margin: 1.5rem 0;
+  padding: 0.2rem 0 0.2rem 1.25rem;
+  border-left: 2px solid var(--color-accent);
+  color: var(--color-ink-secondary);
+  font-family: var(--f-serif);
+  font-style: italic;
+}
+
+/* ── Code ── */
+
+code {
+  font-family: var(--f-mono);
+  font-size: 0.85em;
+  background: var(--color-rule-subtle);
+  border-radius: 3px;
+  padding: 0.1em 0.3em;
+}
+
+pre {
+  background: var(--color-paper-elevated);
+  border: 1px solid var(--color-rule);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+pre code {
+  background: none;
+  padding: 0;
+}
+
+/* ── Tables ── */
+
+.cell-output-display {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1.25rem 0 1.5rem;
+}
+
+th {
+  text-align: left;
+  font-weight: 500;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  padding: 0.5rem 0.65rem;
+  border-bottom: 1px solid var(--color-rule-strong);
+}
+
+td {
+  padding: 0.5rem 0.65rem;
+  border-bottom: 1px solid var(--color-rule);
+  vertical-align: top;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+caption,
+.table-caption,
+figcaption {
+  caption-side: bottom;
+  padding-top: 0.6rem;
+  font-size: 0.82rem;
+  color: var(--color-ink-muted);
+  text-align: left;
+}
+
+/* ── Figures ── */
+
+figure {
+  margin: 1.5rem 0;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── Footnotes, references ── */
+
+#footnotes,
+#refs {
+  font-size: 0.9rem;
+  color: var(--color-ink-secondary);
+}
+
+#refs > div + div {
+  margin-top: 0.75rem;
+}
+
+section#footnotes {
+  border-top: 1px solid var(--color-rule);
+  margin-top: 3rem;
+  padding-top: 1rem;
+}
+
+/* ── Mobile ── */
+
+@media (max-width: 900px) {
+  body {
+    display: block;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  nav#TOC {
+    position: static;
+    margin: 0 0 2rem;
+  }
+}

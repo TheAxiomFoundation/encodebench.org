@@ -43,3 +43,12 @@ coverage/
 .env.production.real
 .claude/
 .env*
+
+# paper render staging (fill_paper.py outputs are committed; these are not)
+paper/out/
+paper/fonts/
+paper/site_libs/
+paper/index.tex
+paper/index.aux
+paper/index.log
+paper/.quarto/

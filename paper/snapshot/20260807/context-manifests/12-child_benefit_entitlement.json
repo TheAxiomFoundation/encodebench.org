@@ -1,0 +1,43 @@
+{
+  "citation": "uk/statute/ukpga/1992/4/141",
+  "context_files": [],
+  "mode": "cold",
+  "policy_prefix": "uk",
+  "provision_metadata_file": "provision-metadata.txt",
+  "review_findings_files": [],
+  "source_metadata": {
+    "source_attestation": {
+      "component_rows": [],
+      "corpus_release": "uk-rulespec-2026-07-14",
+      "corpus_release_content_sha256": "0e53dfd3acb628bd942e9c655837a3776c8fd608a62d4520a821c92549827538",
+      "corpus_release_selector_sha256": "cfd3c6bf227dc70965b5cdf673dcbcafc48067f2be2bff988c194e5f95844ced",
+      "corpus_source": "local",
+      "expression_date": "2026-04-29",
+      "generation_input_sha256": "65ff71a52a9ace7720b6e54901b705cfec50a7c069467c218049b874c85f9ede",
+      "provision_file": "data/corpus/provisions/uk/statute/2026-06-05-uk-child-benefit-sscba.jsonl",
+      "provision_file_sha256": "d6f79950995843f87e6d0cc558dc03a9b43b3e38c319735384d8f6d037f80d00",
+      "requested_corpus_citation_path": "uk/statute/ukpga/1992/4/141",
+      "resolved_corpus_citation_path": "uk/statute/ukpga/1992/4/141",
+      "resolved_text_sha256": "65ff71a52a9ace7720b6e54901b705cfec50a7c069467c218049b874c85f9ede",
+      "row": {
+        "body_sha256": "65ff71a52a9ace7720b6e54901b705cfec50a7c069467c218049b874c85f9ede",
+        "citation_path": "uk/statute/ukpga/1992/4/141",
+        "document_class": "statute",
+        "expression_date": "2026-04-29",
+        "jurisdiction": "uk",
+        "line_number": 1,
+        "provision_file": "data/corpus/provisions/uk/statute/2026-06-05-uk-child-benefit-sscba.jsonl",
+        "provision_file_sha256": "d6f79950995843f87e6d0cc558dc03a9b43b3e38c319735384d8f6d037f80d00",
+        "record_id": "9f9bfda7-1d48-5d4a-9e93-4bb6a2eac5bb",
+        "source_as_of": "2026-06-05",
+        "source_path": "sources/uk/statute/2026-06-05-uk-child-benefit-sscba/ukpga/1992/4/section-141.xml",
+        "version": "2026-06-05-uk-child-benefit-sscba"
+      },
+      "rulespec_root": "/Users/maxghenis/TheAxiomFoundation/ops/model-capability-eval/rig/rulespec-uk/uk",
+      "source_as_of": "2026-06-05",
+      "source_sha256": "65ff71a52a9ace7720b6e54901b705cfec50a7c069467c218049b874c85f9ede"
+    }
+  },
+  "source_metadata_file": "source-metadata.json",
+  "source_text_file": "source.txt"
+}
