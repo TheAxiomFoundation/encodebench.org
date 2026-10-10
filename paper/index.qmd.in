@@ -34,8 +34,9 @@ abstract: |
   to control the comparison did nothing at all. The first two surfaced
   through the same deterministic machinery that grades the models; the
   others took a read-only audit and a receiver probe, both posted in the
-  open. Board v4, pre-registered here, runs on a parity encoder built to
-  close these gaps, reporting means with spread in place of single draws.
+  open. Board v4, pre-registered here, runs its sixteen cases on a parity
+  encoder built to close these gaps, reporting means with spread in place
+  of single draws, and adds a score on production's own admission checks.
 ---
 
 
@@ -533,7 +534,8 @@ now.
 
 ## Board v4, pre-registered
 
-Board v4 runs when a parity encoder merges. The first attempt,
+The sixteen-case board v4 runs when a parity encoder merges; the admission
+suite's four-arm roster may run earlier (@sec-admission). The first attempt,
 [PR #1304](https://github.com/TheAxiomFoundation/axiom-encode/pull/1304),
 closed unmerged on 2026-08-21 after main moved several hundred commits
 beneath it; its replacement, rebuilt on current main, was not yet open at
@@ -559,12 +561,54 @@ prompt-only Claude path. The committed design carries over:
   folds, a seeded canary artifact with a planted ungrounded literal must
   fail the grounding gate; and a source-relative coverage metric replaces
   the advisory column whose denominator is the artifact's own summary
-  (@sec-gates).
+  (@sec-gates). On the admission score that metric is a gate
+  (@sec-admission).
 - **Every run publishes.** The fold may exclude a run only for
   infrastructure failures of enumerated classes — quota exhaustion,
   authentication, harness crash — and an excluded run's results freeze
   alongside the board, marked excluded, as this paper's snapshot already
-  does for the runs in @sec-integrity.
+  does for the runs in @sec-integrity. The admission suite adds one class,
+  stated in @sec-admission.
+
+### The admission score {#sec-admission}
+
+A four-gate pass certifies a mergeable, self-consistent, grounded draft (@sec-gates). Production admission asks for more. Axiom's signed re-encode workflow admits a candidate only after checks the four gates do not run, among them policy proofs and, by default, complete-source-unit checks. A ledger of 106 failed signed-workflow runs created from 2026-09-24 through 2026-10-09 (UTC) shows the gap: 49 ended at a complete-source-unit refusal, a check boards v1 to v3 did not run. A board that never applies production's checks cannot compare models on production admission. Board v4 reports a second score beside the four-gate headline.
+
+**The predicate.** A candidate is *admitted* when it passes every deterministic candidate check on the pinned encoder's signed apply path. The scorer calls that path's own validation function, so the list here describes the function and does not replace it:
+
+- target compilation and CI, with policy proofs and complete-source-unit checks required, and external oracles and model reviewers off;
+- the checks around that pipeline: local filing-status inputs, preservation of existing source relations, the existing target's oracle contract where one applies, and any deferred-output review contract;
+- regression checks on dependent modules, against their baseline;
+- the artifact checks: the candidate exists; generated artifacts that are present stay inside the output root and are regular files, not symlinks or hard links; a companion is required where CI or a review contract demands one; a constrained repair keeps the module bytes its hash binds; the candidate binds to the resolver's source attestation; and, where they apply, the replacement destination, singular provenance, retired-source parameter preservation and structured-review constraints hold.
+
+On the target, every CI issue refuses; there is no advisory channel. Seven complete-source-unit categories sit inside CI: authoritative source, structure, deferral, formula output, source-explicit conditions, tests and numeric recall.
+
+**Numeric recall is a gate.** The numeric-recall category is the source-relative metric promised above. It counts the numeric occurrences of the authoritative source unit after the validator's exemptions, not those of the artifact's own summary, and it refuses when any non-exempt occurrence lacks coverage under the pinned analyzer's matching rules. One credited scalar can cover every repeated occurrence it matches. The board reports the analyzer's own covered, total and missing counts for every candidate; the eval harness's older coverage column is a different quantity and stays separate. When the total is zero, the category has nothing to miss and shows no percentage, and the other checks still apply. When the analysis did not run, the counts are marked unavailable, not zero.
+
+**The pin.** The predicate is the code at one commit of axiom-encode main. That mirrors production: a signed run installs the encoder from the commit it was dispatched at, and keeps that commit however long it waits for approval. A commit does not fix the inputs a check reads, so the pin is wider than the commit. Before any generation, the tracking issue carries the scorer's identity (encoder commit and package version, rules-engine and compose identities) and, for every citation, the corpus release and content hash of its source, its dependency closure, its baseline target, the oracle and review contracts that apply, and the prompt and context identities. The same package computes the four-gate result on the same candidates, in separate fields. An admission refusal never overwrites a four-gate result.
+
+**What is scored.** Production can admit a first generation. Each encode invocation applies deterministic repairs and, when a refusal is retryable, feeds the validator's findings back for another generation, for at most four generations by default. Admission or a non-retryable failure ends the chain early. The primary readout is *chain admission*: whether a fresh chain, started from the citation's frozen inputs with no prior candidate, ends admitted under the pinned commit's own repair, feedback and attempt policy. First-attempt admission, meaning the first generation after those repairs, reports beside it.
+
+**What is excluded.** Resolver-owned source material, authorized references, ownership context and signing resources are frozen prerequisites. For this suite, the infrastructure classes of the rule above gain one more: the inability to supply frozen resolver-owned source, dependency, ownership or signing inputs. A chain excluded for it publishes as excluded and is replaced in its repeat slot until its citation and arm hold the full repeat count. Anything the candidate causes is a scored failure, including a malformed artifact, a provenance binding the candidate breaks, a preservation failure and a review-contract refusal.
+
+**A held-out admission suite.** The sixteen UK cases keep the headline. The admission score also runs on a second suite of 37 citations (15 federal, 19 state and District of Columbia, 3 Canadian). They come from 72 of the ledger's 106 failed runs: those whose final refusal was a completeness, companion-test, proof, entity, formula, grounding or compile check on the generated target. It is a selected set, not every failure the predicate would score. Two citations with candidate refusals are left out: one ended with an existing-target oracle-contract refusal, and one ended with an invalid `module.source_verification.values` field, for which the pinned encoder has a deterministic repair. The selection rules and every excluded run publish with the manifest, and the manifest's sha256 freezes in this repository before any v4 run. "Held out" means held out from v4: no prompt, gate or routing change responds to a v4 result on these citations until the run is complete. It does not mean unseen, since these failures have already informed encoder fixes. A citation whose signed source cannot be rematerialized drops before the first generation, and the dropped list publishes. The suite measures rescue at the pin: fresh generations on citations that failed before. It cannot estimate an admission rate over all work.
+
+**Gates move between the ledger and the pin.** These citations failed under the encoder of their day, and some refusals were validator faults. One Oklahoma statute (68 O.S. § 2906) was refused for not representing 162, which its source row gives as a session-law chapter number: "Added by Laws 1988, c. 162, § 106". The score is taken at the pin, never at the ledger. A citation stays in the suite whether or not a later gate fix would now admit it, and the gate changes merged between the ledger and the pin are listed with the pin. A rescue at the pin can therefore come from a gate fix as well as from a model, and the listing is what lets a reader tell them apart.
+
+**Arms.** Every arm runs the codex backend, in the same encoder mode and from the same frozen context, so the arms differ only in their retry options. Sharing a backend is not the whole one-exam contract above: prompt and context identities and CLI versions are recorded for every chain, and a chain counts only if they match across arms. Production's signed workflow generates through the API backend instead. The admission checks are the same code, but the generation exam is the codex backend's (@sec-parity), so the baseline arm is production's routing on another backend, not production itself. Because the arms share one backend, this suite does not wait for the parity encoder; the sixteen-case board still does, and cross-family arms join this suite only then. An arm is a setting of the encoder's own retry options, with retries enabled and four generations allowed:
+
+| Arm | Retry options |
+|---|---|
+| Default routing | `--model gpt-6-luna --escalation-model gpt-6-sol --escalate-after 2` |
+| Single model *M* | `--model M --escalation-model M --escalate-after 4`, for *M* in gpt-6-luna, gpt-6-sol, gpt-6.1-sol |
+
+Each arm runs at the encoder's default codex reasoning effort at the pin, recorded per chain beside the requested level. The three-level effort sweep stays with the sixteen-case board. These four arms are the decision roster. Every citation and arm gets the same number of scored chains, *R*, with *R* at least 2; *R* posts with the roster before the first generation.
+
+**Reading a citation.** A diagnostic-to-category mapping publishes before any generation. A chain that is not admitted has a refusal signature: the sorted set of mapped categories from its actual last attempt, after any deterministic repairs. That includes a generation failure or other non-validator failure where no candidate exists. Every failure status has an explicit mapping, and a missing diagnostic never becomes an empty signature. For a chain that ends in a validator refusal, the scorer also turns on the encoder's option to emit its best rejected candidate and reports that one separately; where none is emitted, the field is unavailable. A citation *splits* when at least one roster arm admits it in at least one of its *R* chains and at least one roster arm admits it in none. A citation every arm admits in some chain does not split. A citation no arm admits is a *common refusal* when every chain's signature matches and a *mixed refusal* otherwise. Chains of one arm that disagree are reported as repeat instability and do not make a split on their own. A common refusal opens an encoder investigation. It does not by itself say whether the prompt, the gate or the models are at fault.
+
+**Comparing arms.** For each arm, count the citations admitted in each repeat. The arm's score is the mean of those counts, and its range is the largest count minus the smallest. One arm beats another only when its mean exceeds the other's by more than the larger of the two ranges (@sec-variance). A count of citations admitted in any repeat does not substitute for the mean. This is a yardstick, not a confidence interval.
+
+**What follows from it.** One decision is fixed before the data. Let *N* be the number of citations scored, after the pre-generation drops. The decision applies only when *N* is above zero and every scored citation and roster arm holds all *R* scored chains; otherwise the experiment publishes as incomplete and decides nothing. If the number of citations that split is at least *N*/4, rounded up (10 when *N* is 37), a forward routing trial follows: arms assigned at random at dispatch, in production, on work not selected for having failed. If fewer split, no routing trial follows, and the effort goes to aligning the encoder with its gates. Either way, this board alone supports no claim of production gain. That claim needs the forward trial: admitted output per unit of time and spend, failures included.
 
 This pre-registration binds through the paper's public git history. The
 run count per arm and the exact roster stay open until launch and will
