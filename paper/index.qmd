@@ -621,12 +621,35 @@ prompt-only Claude path. The committed design carries over:
   folds, a seeded canary artifact with a planted ungrounded literal must
   fail the grounding gate; and a source-relative coverage metric replaces
   the advisory column whose denominator is the artifact's own summary
-  (@sec-gates).
+  (@sec-gates). On the admission score that metric is a gate
+  (@sec-admission).
 - **Every run publishes.** The fold may exclude a run only for
   infrastructure failures of enumerated classes — quota exhaustion,
   authentication, harness crash — and an excluded run's results freeze
   alongside the board, marked excluded, as this paper's snapshot already
   does for the runs in @sec-integrity.
+
+### The admission score {#sec-admission}
+
+A four-gate pass certifies a mergeable, self-consistent, grounded draft (@sec-gates). Production admission asks for more. Axiom's signed re-encode workflow admits a candidate only when the validator passes with policy proofs required and, by default, complete-source-unit checks required. Of the 106 signed runs that failed between 2026-09-24 and 2026-10-09, 49 ended at a complete-source-unit refusal, a check boards v1 to v3 did not run. A board that cannot fail a model where production fails it cannot say which model production should run. Board v4 reports a second score beside the four-gate headline.
+
+**The predicate.** A candidate is *admitted* when the pinned encoder's deterministic admission check passes. That check is the validator pipeline configured as the signed apply path configures it: policy proofs required, complete source unit required, external oracles and model reviewers off, and the existing target's oracle contract supplied where a target exists. It returns two results, `compile` and `ci`, and both must pass. Every `ci` issue refuses; there is no advisory channel. Seven complete-source-unit categories sit inside `ci`: authoritative source, structure, deferral, formula output, source-explicit conditions, tests and numeric recall.
+
+**Numeric recall is a gate.** The numeric-recall category is the source-relative metric promised above. Its denominator is the numeric occurrences of the authoritative source unit after the validator's exemptions, not those of the artifact's own summary, and one unrepresented occurrence refuses. The board reports covered, total and missing occurrences for every candidate. A source with no numeric obligation passes and shows no percentage.
+
+**The pin.** The predicate is the code at one commit of axiom-encode main. That mirrors production: a signed run installs the encoder from the commit it was dispatched at, and keeps that commit however long it waits for approval. The pinned commit, its package version, and the rules-engine and compose identities post to the tracking issue before the first run. The same package computes the four-gate result on the same candidates, in separate fields. An admission refusal never overwrites a four-gate result.
+
+**What is scored.** Production does not admit first drafts. It runs a bounded loop: deterministic repairs, then validator feedback to the model, for at most four attempts. The primary readout is *chain admission*: whether a fresh chain, run under the pinned commit's own repair, feedback and attempt policy, ends admitted. First-attempt admission reports beside it. Corpus materialization, authorized refs, ownership manifests, attestation and signing are prerequisites of the transaction, not properties of the candidate. They are packaged before any run, and a failure there is an enumerated infrastructure exclusion, published with the board.
+
+**A held-out admission suite.** The sixteen UK cases keep the headline. The admission score also runs on a second suite: the 37 citations (15 federal, 19 state and District of Columbia, 3 Canadian) at which those failed signed runs ended on a check intrinsic to the candidate. The list freezes as a manifest, with its sha256 in this repository, before any v4 run and before any prompt, gate or routing change made in response to it. A citation whose signed source cannot be rematerialized drops before the first run, and the dropped list publishes. This suite is a failure census. It measures rescue under fixed gates. It cannot estimate an admission rate over all work.
+
+**Gates move between the census and the pin.** These citations failed under the encoder of their day, and some refusals were validator faults since fixed. One Oklahoma statute was refused for not representing 162, which is a session-law chapter number in its history note. The score is taken at the pin, never at the census. A citation stays in the suite whether or not a later gate fix would now admit it, and the gate changes merged between the census and the pin are listed with the pin.
+
+**Arms.** Every arm runs the codex backend, so the arms sit one exam by construction. Production's signed workflow generates through the API backend instead. The admission check is the same code, but the generation exam is the codex backend's (@sec-parity), so the baseline arm is production's routing on another backend, not production itself. An arm is a setting of the encoder's own retry options, with the budget held at four attempts. The arms are the production default (two attempts on gpt-6-luna, then two on gpt-6-sol) and single-model chains on gpt-6-luna, gpt-6-sol and gpt-6.1-sol. Cross-family arms join when the parity encoder merges. The repeat count posts with the roster.
+
+**Reading it.** A citation *splits* when at least one arm admits it in some chain and at least one arm admits it in none. When no arm admits a citation and every chain ends at the same refusal category, the finding concerns the prompt or the gate, and it is filed as an encoder issue. A routing claim across the suite needs one arm to admit more citations than another by more than either arm's own range across repeats (@sec-variance).
+
+**What follows from it.** One decision is fixed before the data. If a quarter or more of the scored citations split, a forward routing trial follows: arms assigned at dispatch, in production, on work not selected for having failed. If fewer split, no routing trial follows, and the effort goes to aligning the encoder with its gates. Either way, this board alone supports no claim of production gain. That claim needs the forward trial: admitted output per unit of time and spend, failures included.
 
 This pre-registration binds through the paper's public git history. The
 run count per arm and the exact roster stay open until launch and will
